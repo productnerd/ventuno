@@ -12,12 +12,12 @@ const STATUS = {
 };
 
 const CUISINE = {
-  jp:     { label: 'Japanese',          color: 'bg-rose-50 text-rose-700 border-rose-200' },
-  latam:  { label: 'Latin American',    color: 'bg-orange-50 text-orange-700 border-orange-200' },
-  it:     { label: 'Italian',           color: 'bg-yellow-50 text-yellow-700 border-yellow-200' },
-  eu:     { label: 'European',          color: 'bg-stone-100 text-stone-700 border-stone-300' },
-  me:     { label: 'Middle East',       color: 'bg-teal-50 text-teal-700 border-teal-200' },
-  none:   { label: 'Untagged',          color: 'bg-white text-stone-500 border-stone-200' },
+  jp:     { label: 'Japanese',          flag: '🇯🇵', color: 'bg-rose-50 text-rose-700 border-rose-200' },
+  latam:  { label: 'Latin American',    flag: '🇵🇪', color: 'bg-orange-50 text-orange-700 border-orange-200' },
+  it:     { label: 'Italian',           flag: '🇮🇹', color: 'bg-yellow-50 text-yellow-700 border-yellow-200' },
+  eu:     { label: 'European',          flag: '🇪🇺', color: 'bg-stone-100 text-stone-700 border-stone-300' },
+  me:     { label: 'Middle East',       flag: '🇱🇧', color: 'bg-teal-50 text-teal-700 border-teal-200' },
+  none:   { label: 'Untagged',          flag: '',    color: 'bg-white text-stone-500 border-stone-200' },
 };
 
 const ALT_LEVELS = {
@@ -861,7 +861,7 @@ function MenuWorkshop() {
               const meta = CUISINE[k] || CUISINE.none;
               return (
                 <span key={k} className={`text-xs px-2 py-1 border rounded-full ${meta.color}`}>
-                  {meta.label} · {v}
+                  {meta.flag && <span className="mr-1">{meta.flag}</span>}{meta.label} · {v}
                 </span>
               );
             })}
@@ -1058,11 +1058,13 @@ function ItemCard({ item, sectionId, editing, onEditStart, onEditEnd, onUpdate, 
           {cuisines.map((c) => {
             const meta = CUISINE[c] || CUISINE.none;
             return (
-              <span key={c} className={`text-xs px-2 py-1 rounded-full border ${meta.color}`}>{meta.label}</span>
+              <span key={c} className={`text-xs px-2 py-1 rounded-full border ${meta.color}`}>
+                {meta.flag && <span className="mr-1">{meta.flag}</span>}{meta.label}
+              </span>
             );
           })}
           {item.kaji && (
-            <span className="text-xs px-2 py-1 rounded-full border bg-indigo-50 text-indigo-800 border-indigo-300">From Kaji</span>
+            <span className="text-[10px] uppercase tracking-widest font-semibold px-2 py-1 rounded-sm bg-indigo-700 text-stone-50">From Kaji</span>
           )}
           <button
             onClick={() => onUpdate({ vegan: !item.vegan })}
@@ -1377,19 +1379,23 @@ function computeFinalSection(section) {
     const cuisines = (Array.isArray(c.cuisines) && c.cuisines.length)
       ? c.cuisines
       : (c.source && /Kaji|Matsuhisa|Nobu/.test(c.source) ? ['jp'] : []);
+    const kaji = !!c.kaji || c.type === 'kaji';
+    let source = '';
+    if (c.source && !kaji) source = 'via ' + c.source;
+    else if (!c.source) source = 'New candidate';
     dishes.push({
       name: c.name,
       ingredients: c.desc || '',
       price: c.price,
       vegan: !!c.vegan,
       cypriot: !!c.cypriot,
-      kaji: !!c.kaji || c.type === 'kaji',
+      kaji,
       isNew: c.type === 'new-safe' || c.type === 'new-creative',
       notes: '',
       tweak: '',
       status: '',
       cuisines,
-      source: c.source ? 'via ' + c.source : 'New candidate',
+      source,
     });
   });
   return dishes;
@@ -1413,10 +1419,10 @@ function FinalMenuList({ data, verbose = false }) {
                 <div className="flex items-baseline gap-2 flex-wrap">
                   <span className="font-display text-base text-stone-900">{d.name}</span>
                   {d.isNew && (
-                    <span className="text-[9px] uppercase tracking-widest px-1.5 py-0.5 rounded-full bg-rose-50 text-rose-700 border border-rose-300">New</span>
+                    <span className="text-[9px] uppercase tracking-widest font-semibold px-1.5 py-0.5 rounded-sm bg-stone-900 text-stone-50">✦ New</span>
                   )}
                   {d.kaji && (
-                    <span className="text-[9px] uppercase tracking-widest px-1.5 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-300">From Kaji</span>
+                    <span className="text-[9px] uppercase tracking-widest font-semibold px-1.5 py-0.5 rounded-sm bg-indigo-700 text-stone-50">From Kaji</span>
                   )}
                   {d.vegan && <VeganPill/>}
                   {d.cypriot && <CypriotFlag size={14}/>}
@@ -1433,7 +1439,7 @@ function FinalMenuList({ data, verbose = false }) {
                     {d.source && <span>{d.source}</span>}
                     {(d.cuisines || []).filter((c) => CUISINE[c]).map((c) => (
                       <span key={c} className={`px-1.5 py-0.5 rounded-full border ${CUISINE[c].color}`}>
-                        {CUISINE[c].label}
+                        {CUISINE[c].flag && <span className="mr-1">{CUISINE[c].flag}</span>}{CUISINE[c].label}
                       </span>
                     ))}
                     {d.status && d.status !== 'pending' && STATUS[d.status] && (
