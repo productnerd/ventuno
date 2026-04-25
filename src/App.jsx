@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Plus, Trash2, Download, RotateCcw, Star, AlertCircle, X, Edit3, Check, ExternalLink, Leaf, Ban, Sparkles, Shield, Flame, Bookmark, ClipboardList, Share2 } from 'lucide-react';
 
-const STORAGE_KEY = 'ventuno_menu_v3';
+const STORAGE_KEY = 'ventuno_menu_v4';
 
 const STATUS = {
   pending:  { label: 'Pending review', dot: 'bg-stone-400',     pill: 'bg-stone-100 text-stone-700 border-stone-300' },
@@ -15,8 +15,7 @@ const CUISINE = {
   jp:     { label: 'Japanese',          color: 'bg-rose-50 text-rose-700 border-rose-200' },
   latam:  { label: 'Latin American',    color: 'bg-orange-50 text-orange-700 border-orange-200' },
   it:     { label: 'Italian',           color: 'bg-yellow-50 text-yellow-700 border-yellow-200' },
-  eu:     { label: 'European steak.',   color: 'bg-stone-100 text-stone-700 border-stone-300' },
-  fusion: { label: 'Fusion',            color: 'bg-violet-50 text-violet-700 border-violet-200' },
+  eu:     { label: 'European',          color: 'bg-stone-100 text-stone-700 border-stone-300' },
   me:     { label: 'Middle East',       color: 'bg-teal-50 text-teal-700 border-teal-200' },
   none:   { label: 'Untagged',          color: 'bg-white text-stone-500 border-stone-200' },
 };
@@ -59,7 +58,9 @@ const A = (level, name, desc, opts = {}) => ({
   level, name, desc,
   cypriot: !!opts.cy,
   vegan: !!opts.v,
+  kaji: !!opts.kaji,
   supplies: Array.isArray(opts.supplies) ? opts.supplies : null,
+  cuisines: Array.isArray(opts.cuisines) ? opts.cuisines : null,
 });
 
 const C = (type, name, desc, opts = {}) => ({
@@ -69,7 +70,9 @@ const C = (type, name, desc, opts = {}) => ({
   source: opts.source || null,
   cypriot: !!opts.cy,
   vegan: !!opts.v,
+  kaji: !!opts.kaji || (type === 'kaji'),
   supplies: Array.isArray(opts.supplies) ? opts.supplies : null,
+  cuisines: Array.isArray(opts.cuisines) ? opts.cuisines : null,
   added: false,
 });
 
@@ -114,8 +117,8 @@ const initialMenu = [
   ]},
 
   { section: 'Sushi Platters', items: [
-    { name: 'Fusion Platter', price: 52, ingredients: 'Beef taco (2pcs), tuna taco (2pcs), chicken yakitori (2pcs), prawns tempura (2pcs), tuna nigiri (2pcs), Fuji roll', cuisine: 'fusion', alternatives: [
-      A('safe',     'Same composition, renamed Nikkei platter', 'Just rename and tighten plating. Zero kitchen impact.'),
+    { name: 'Mixed Nikkei Platter', price: 52, ingredients: 'Beef taco (2pcs), tuna taco (2pcs), chicken yakitori (2pcs), prawns tempura (2pcs), tuna nigiri (2pcs), Fuji roll', cuisines: ['jp', 'latam'], alternatives: [
+      A('safe',     'Nikkei sharing platter',                  'Same composition as the original, refreshed name and plating. Zero kitchen impact.'),
       A('medium',   'Anticucho-Nikkei Platter',                'Wagyu nigiri (2), sea bass nigiri (2), 2 anticucho skewers, ceviche cup, Fuji roll.'),
       A('creative', '21 Cyprus Tasting',                       'Halumiyaki, Cyprus sea bream nigiri, halloumi taco, octopus tataki, anari roll. The signature platter.', { cy: true, price: 58 }),
     ]},
@@ -131,7 +134,7 @@ const initialMenu = [
 
   { section: 'Special Rolls (8pcs)', items: [
     { name: 'Vegetable Roll', price: 12, ingredients: 'Cucumber, avocado, mango, kanpyo. Topped with wakame salad and sesame seeds.', cuisine: 'jp', vegan: true, alternatives: [
-      A('safe',     'Same with umeboshi accent',               'Add a touch of pickled plum for depth. Still fully vegan.', { v: true }),
+      A('safe',     'Vegetable roll with umeboshi',            'Cucumber, avocado, mango, kanpyo, pickled plum, wakame. Light umeboshi accent for depth. Fully vegan.', { v: true }),
       A('medium',   'Smoked mushroom roll, tahini-ponzu',      'Oyster mushrooms, smoked, tahini-ponzu drizzle, crispy onions.', { v: true }),
       A('creative', 'Cyprus garden roll',                       'Halloumi tempura inside, mint, courgette ribbon, sumac sesame top. Vegetarian, not vegan.', { cy: true }),
     ]},
@@ -141,11 +144,11 @@ const initialMenu = [
       A('creative', 'Loukoumades crab roll',                   'Honey-ponzu glaze, sesame crunch, mint. A doughnut nod, may be too far.', { cy: true }),
     ]},
     { name: 'Ebi Tempura Roll', price: 14, ingredients: 'Tempura prawn, mango, cucumber, teriyaki sauce. Topped with tempura flakes.', cuisine: 'jp', alternatives: [
-      A('safe',     'Same with chipotle mayo finish',           'Chipotle drizzle and lime. Subtle Mexican accent.'),
+      A('safe',     'Ebi tempura roll, chipotle mayo',         'Tempura prawn, mango, cucumber, teriyaki, chipotle mayo drizzle, lime.'),
       A('medium',   'Volcano dynamite ebi roll',                'Torched dynamite cheese top, sriracha, scallion.'),
       A('creative', 'Kataifi-tempura ebi roll',                 'Shredded kataifi instead of panko on the prawns. Crunchier and more Cypriot.', { cy: true }),
     ]},
-    { name: 'Fuji Roll', price: 14, ingredients: 'Cucumber, truffle mayo, asparagus, salmon. Topped with fresh salmon.', cuisine: 'fusion', alternatives: [
+    { name: 'Fuji Roll', price: 14, ingredients: 'Cucumber, truffle mayo, asparagus, salmon. Topped with fresh salmon.', cuisines: ['jp', 'eu'], alternatives: [
       A('safe',     'Truffle Fuji, chives, ikura',              'Add ikura beads on top for visual punch.'),
       A('medium',   'Wagyu cap Fuji',                           'Top with seared wagyu, tobiko, truffle ponzu instead of mayo.'),
       A('creative', 'Pistachio Fuji',                           'Roasted Aegina pistachio dust, truffle ponzu. Med-Nikkei luxe.', { cy: true }),
@@ -156,12 +159,12 @@ const initialMenu = [
       A('creative', 'Cyprus dynamite',                          'Yellow Cyprus chilli pepper, halloumi sour cream cap. Bold.', { cy: true }),
     ]},
     { name: 'Tempura Roll', price: 16, ingredients: 'Grilled salmon, ebi tempura, mango, teriyaki mayonnaise.', cuisine: 'jp', alternatives: [
-      A('safe',     'Same roll, plate refresh',                 'Tighten plating, add micro coriander.'),
+      A('safe',     'Tempura roll, refreshed plate',           'Grilled salmon, ebi tempura, mango, teriyaki mayo, micro coriander.'),
       A('medium',   'Surf and turf tempura',                    'Add seared wagyu strip on top, truffle ponzu.'),
       A('creative', 'Kataifi-wrapped tempura roll',             'Wrapped in toasted kataifi instead of nori-out.', { cy: true }),
     ]},
     { name: 'Maguro Roll', price: 16, ingredients: 'King crab, mango, cucumber. Topped with fresh tuna, chives, spicy mayo.', cuisine: 'jp', alternatives: [
-      A('safe',     'Same with truffle ponzu drizzle',          'Light truffle ponzu over the tuna.'),
+      A('safe',     'Maguro roll, truffle ponzu',              'King crab, mango, cucumber, fresh tuna, light truffle ponzu drizzle, chives.'),
       A('medium',   'Spicy Tuna Uramaki (Kaji style)',          'Tuna belly, sesame, avocado, spicy sauce. Kaji had this and it sold.'),
       A('creative', 'Maguro and feta roll',                     'White feta inside, ponzu drizzle. Polarising, so test it first.', { cy: true }),
     ]},
@@ -180,11 +183,11 @@ const initialMenu = [
 
   { section: 'Salad', items: [
     { name: 'Kaji Garden Salad', price: 10, ingredients: 'Seasonal veggies, pickled citrus, sake dressing.', cuisine: 'jp', vegan: true, alternatives: [
-      A('safe',     'Same, expand seasonal vegetables',         'Lean on Cyprus seasonal produce week to week.', { v: true, cy: true }),
+      A('safe',     'Cyprus seasonal garden salad',            'Cyprus seasonal vegetables, pickled citrus, sake dressing. Rotates with the local market.', { v: true, cy: true }),
       A('medium',   'Add quinoa for substance',                 'Peruvian touch, makes it a fuller starter.', { v: true }),
       A('creative', 'Cyprus garden salad with grilled halloumi', 'Same dressing, add grilled halloumi cubes. Vegetarian.', { cy: true }),
     ]},
-    { name: 'Burrata', price: 16, ingredients: 'Guacamole, mushrooms, tortilla, peppers.', cuisine: 'fusion', recommendRemove: true, alternatives: [
+    { name: 'Burrata', price: 16, ingredients: 'Guacamole, mushrooms, tortilla, peppers.', cuisines: ['it', 'latam'], recommendRemove: true, alternatives: [
       A('safe',     'Burrata with miso dressing',               'Strip the tortilla and guac, replace with miso-soy dressing and shiso.'),
       A('medium',   'Anari and avocado tartare',                'Swap burrata for Cyprus anari, plate as tartare with avocado, citrus.', { cy: true }),
       A('creative', 'Halloumi tataki',                          'Replace burrata entirely with halloumi seared like tataki, ponzu, furikake.', { cy: true }),
@@ -202,32 +205,32 @@ const initialMenu = [
   ]},
 
   { section: 'To Start', items: [
-    { name: 'Tuna Spicy Tataki', price: 12, ingredients: 'Crispy tostadas, truffle cape mayo.', cuisine: 'fusion', alternatives: [
-      A('safe',     'Same, plating refresh',                    'Already on theme. Tighten the truffle cape mayo recipe.'),
+    { name: 'Tuna Spicy Tataki', price: 12, ingredients: 'Crispy tostadas, truffle cape mayo.', cuisines: ['jp', 'latam', 'eu'], alternatives: [
+      A('safe',     'Tuna spicy tataki, refreshed',            'Crispy tostadas, truffle cape mayo, refreshed plating. Recipe tightened.'),
       A('medium',   'Tuna tataki on crispy rice',               'Swap tostada base for crispy rice cube. Matsuhisa idiom.'),
       A('creative', 'Tuna tataki on kataifi nest',              'Crispy kataifi base instead of tostada. Cyprus crunch.', { cy: true }),
     ]},
-    { name: 'Beef Devesa Tataki', price: 12, ingredients: 'Truffle, ponzu, sesame furikake, caviar.', cuisine: 'jp', alternatives: [
-      A('safe',     'Same dish, hero of the section',           'Already excellent. Mark this as a hero, do not change.'),
+    { name: 'Beef Devesa Tataki', price: 12, ingredients: 'Truffle, ponzu, sesame furikake, caviar.', cuisines: ['jp', 'eu'], alternatives: [
+      A('safe',     'Beef devesa tataki, hero plate',          'Truffle, ponzu, sesame furikake, caviar. The current recipe, untouched and marked hero.'),
       A('medium',   'Beef tataki anticucho style',              'Same flavours, served as 2 mini skewers instead of slices.'),
       A('creative', 'Beef tataki with carob molasses',          'Cyprus carob molasses glaze, sesame, ponzu. Sweet-savoury.', { cy: true }),
     ]},
-    { name: 'Beef Tartare', price: 18, ingredients: 'Crispy rice, sriracha, Japanese mayo, quail egg.', cuisine: 'fusion', alternatives: [
-      A('safe',     'Same dish, presentation upgrade',          'Already strong. Plate it more dramatically.'),
+    { name: 'Beef Tartare', price: 18, ingredients: 'Crispy rice, sriracha, Japanese mayo, quail egg.', cuisines: ['eu', 'jp'], alternatives: [
+      A('safe',     'Beef tartare, dramatic plate',            'Crispy rice, sriracha, Japanese mayo, quail egg. Same recipe, more theatrical plating.'),
       A('medium',   'Tartare with tsukemono pickles (Kaji)',    'Kaji had this with pickles and cured yolk. Different texture profile.'),
       A('creative', 'Tartare with Cyprus pickles and koji oil', 'Cypriot pickled vegetables and aged soy oil. Bridge.', { cy: true }),
     ]},
-    { name: 'Fried Calamari', price: 14, ingredients: 'Chimichurri, chipotle.', cuisine: 'latam', alternatives: [
-      A('safe',     'Same with togarashi salt',                 'Add Japanese 7-spice salt to the dust. Tiny lift.'),
+    { name: 'Fried Calamari', price: 14, ingredients: 'Chimichurri, chipotle.', cuisines: ['latam', 'it'], alternatives: [
+      A('safe',     'Fried calamari, togarashi salt',          'Chimichurri, chipotle mayo, finished with Japanese 7-spice salt.'),
       A('medium',   'Calamari katsu, ginger chimichurri',       'Panko coated, served with chimichurri-ginger dip.'),
       A('creative', 'Calamari with halloumi crumb',             'Crushed halloumi in the dredge, lemon-ponzu mayo.', { cy: true }),
     ]},
     { name: 'Prawns Tempura (4pcs)', price: 12, ingredients: 'Sweet chilli.', cuisine: 'jp', alternatives: [
-      A('safe',     'Same with yuzu-chilli sauce',              'Slightly sharper than sweet chilli.'),
+      A('safe',     'Prawn tempura, yuzu-chilli',              'Four prawn tempura, yuzu-chilli dipping sauce. Sharper than sweet chilli.'),
       A('medium',   'Rock shrimp tempura',                      'Smaller, popcorn-style, creamy sauce. Nobu staple.'),
       A('creative', 'Prawns kataifi',                           'Wrapped in kataifi instead of tempura batter. Cypriot crunch.', { cy: true }),
     ]},
-    { name: 'Pork Quesadillas', price: 10, ingredients: 'Mole, cheddar.', cuisine: 'latam', alternatives: [
+    { name: 'Pork Quesadillas', price: 10, ingredients: 'Mole, cheddar.', cuisines: ['latam', 'eu'], alternatives: [
       A('safe',     'Carnitas Quesadillas (Kaji recipe)',       'Replace with Kaji original: pulled pork, mole roja, cheese. Same idea, better recipe.'),
       A('medium',   'Pork belly quesadilla, miso glaze',        'Miso glazed pork belly instead of mole. More Nikkei.'),
       A('creative', 'Souvla pork quesadilla',                   'Cyprus souvla pork, halloumi, mole. Pure bridge dish.', { cy: true }),
@@ -242,23 +245,23 @@ const initialMenu = [
   ]},
 
   { section: 'Tacos', items: [
-    { name: 'Vegan Tacos (2pcs)', price: 12.5, ingredients: 'Oyster mushrooms, umami glaze, tahini.', cuisine: 'fusion', vegan: true, alternatives: [
-      A('safe',     'Same, drop the tahini',                    'Tahini fights with the umami glaze. Replace with sesame oil drizzle.', { v: true }),
+    { name: 'Vegan Tacos (2pcs)', price: 12.5, ingredients: 'Oyster mushrooms, umami glaze, tahini.', cuisines: ['latam', 'jp', 'me'], vegan: true, alternatives: [
+      A('safe',     'Mushroom tacos, sesame drizzle',          'Oyster mushrooms, umami glaze, sesame oil drizzle. Tahini removed for a cleaner profile.', { v: true }),
       A('medium',   'Smoked mushroom tacos, miso crema',        'Cashew-miso crema instead of tahini. Cleaner profile.', { v: true }),
       A('creative', 'Cyprus mushroom tacos',                    'Local wild mushrooms, carob glaze, fennel. Vegan.', { cy: true, v: true }),
     ]},
-    { name: 'Tuna Tartare Tacos (2pcs)', price: 14, ingredients: 'Cilantro, sesame, crispy onions.', cuisine: 'fusion', alternatives: [
-      A('safe',     'Same dish, hero',                          'Already a flagship Kaji-style dish. Do not touch.'),
+    { name: 'Tuna Tartare Tacos (2pcs)', price: 14, ingredients: 'Cilantro, sesame, crispy onions.', cuisines: ['latam', 'jp'], alternatives: [
+      A('safe',     'Tuna tartare tacos, hero plate',          'Cilantro, sesame, crispy onions, the flagship Kaji-style tacos. Recipe locked.'),
       A('medium',   'Tuna tartare tacos with avocado mousse',   'Add avocado mousse base. Kaji used this.'),
       A('creative', 'Tuna tartare in kataifi taco shell',       'Replace nori taco with crispy kataifi nest.', { cy: true }),
     ]},
-    { name: 'Salmon Tacos (2pcs)', price: 12.5, ingredients: 'Radish, citrus, chives, ginger mayo.', cuisine: 'fusion', alternatives: [
-      A('safe',     'Same with yuzu-citrus emulsion',           'Sharper citrus profile.'),
+    { name: 'Salmon Tacos (2pcs)', price: 12.5, ingredients: 'Radish, citrus, chives, ginger mayo.', cuisines: ['latam', 'jp'], alternatives: [
+      A('safe',     'Salmon tacos, yuzu-citrus',               'Radish, citrus, chives, yuzu-citrus emulsion. Sharper than the original ginger mayo.'),
       A('medium',   'Aburi salmon tacos',                       'Torched salmon, ginger mayo, ikura.'),
       A('creative', 'Salmon tacos with Cyprus citrus salsa',    'Bitter orange salsa from Cyprus.', { cy: true }),
     ]},
-    { name: 'Beef Devesa Tacos (2pcs)', price: 15, ingredients: 'Asian slaw, ginger, cilantro.', cuisine: 'fusion', alternatives: [
-      A('safe',     'Same dish, hero',                          'Already excellent. Mark hero.'),
+    { name: 'Beef Devesa Tacos (2pcs)', price: 15, ingredients: 'Asian slaw, ginger, cilantro.', cuisines: ['latam', 'jp', 'eu'], alternatives: [
+      A('safe',     'Beef devesa tacos, hero plate',           'Asian slaw, ginger, cilantro on the existing Kaji-style beef. Recipe locked.'),
       A('medium',   'Wagyu tacos with onion-soy',               'Upgrade beef to wagyu. Matsuhisa price benchmark €85 for 8pc.'),
       A('creative', 'Souvla beef taco with halloumi crema',     'Cyprus souvla style beef, halloumi crema, mint.', { cy: true }),
     ]},
@@ -272,12 +275,12 @@ const initialMenu = [
 
   { section: 'Anticucho and Yakitori', items: [
     { name: 'Grilled Asparagus (1pc)', price: 6.5, ingredients: 'Sesame praline, roasted almonds.', cuisine: 'jp', vegan: true, alternatives: [
-      A('safe',     'Same dish, hero',                          'Already on the Kaji menu and on the current menu. Keep.', { v: true }),
+      A('safe',     'Grilled asparagus, hero plate',           'Sesame praline, roasted almonds. The recipe is on both Kaji and the current menu, leave it alone.', { v: true }),
       A('medium',   'Asparagus with miso butter',               'Miso butter glaze, sesame praline, lemon zest.'),
       A('creative', 'Asparagus with Cyprus carob molasses',     'Carob molasses-soy glaze, almond crumble.', { cy: true, v: true }),
     ]},
     { name: 'Grilled Shrimps (1pc)', price: 6.5, ingredients: 'Yuzu kosho, chives.', cuisine: 'jp', alternatives: [
-      A('safe',     'Same dish, hero',                          'Already excellent.'),
+      A('safe',     'Grilled shrimp, hero plate',              'Yuzu kosho, chives. Existing recipe untouched, marked hero.'),
       A('medium',   'Shrimps with den miso',                    'Den miso glaze, scallion. Robata style.'),
       A('creative', 'Shrimps with Cyprus pepper sauce',         'Roasted Cyprus chilli pepper paste, lime.', { cy: true }),
     ]},
@@ -299,12 +302,12 @@ const initialMenu = [
 
   { section: 'Gyoza', items: [
     { name: 'Prawn Gyoza (4pcs)', price: 12, ingredients: 'Prawn, celeriac, soy yuzu sauce, sesame.', cuisine: 'jp', alternatives: [
-      A('safe',     'Same, plating refresh',                    'Strong already.'),
+      A('safe',     'Prawn gyoza, refreshed plate',            'Prawn, celeriac, soy yuzu, sesame. Existing strong recipe with cleaner plating.'),
       A('medium',   'Crispy-skirt prawn gyoza',                 'Pan fried with the crispy lace skirt connecting them.'),
       A('creative', 'Prawn gyoza with anari and dill',          'Anari ricotta and dill in the filling. Cypriot pelmeni vibe.', { cy: true }),
     ]},
-    { name: 'Beef Gyoza (4pcs)', price: 12, ingredients: 'Sirloin, celeriac, soy yuzu sauce, chives.', cuisine: 'jp', alternatives: [
-      A('safe',     'Same, plating refresh',                    'Strong already.'),
+    { name: 'Beef Gyoza (4pcs)', price: 12, ingredients: 'Sirloin, celeriac, soy yuzu sauce, chives.', cuisines: ['jp', 'eu'], alternatives: [
+      A('safe',     'Beef gyoza, refreshed plate',             'Sirloin, celeriac, soy yuzu, chives. Existing strong recipe with cleaner plating.'),
       A('medium',   'Wagyu gyoza',                              'Upgrade beef to wagyu, charge €16.'),
       A('creative', 'Souvla beef gyoza',                        'Cyprus souvla seasoning in the filling, mint dipping sauce.', { cy: true }),
     ]},
@@ -314,13 +317,13 @@ const initialMenu = [
   ]},
 
   { section: 'Mains (Ventuno Special)', items: [
-    { name: 'Baby Calamari Risotto', price: 18, ingredients: 'Roasted pepper coulis, lime.', cuisine: 'it', alternatives: [
+    { name: 'Baby Calamari Risotto', price: 18, ingredients: 'Roasted pepper coulis, lime.', cuisines: ['it', 'latam'], alternatives: [
       A('safe',     'Risotto with dashi base',                  'Replace stock with dashi. Same plate, more umami.'),
       A('medium',   'Squid ink risotto, miso butter',           'Black risotto, calamari on top, miso butter finish.'),
       A('creative', 'Cyprus seafood arroz Nikkei',              'Saffron-dashi arroz with calamari, prawn, mussels. Med-Nikkei.', { cy: true }),
     ]},
-    { name: 'Beef Angus Sirloin (160gr)', price: 28, ingredients: 'Oyster mushrooms, chimichurri.', cuisine: 'eu', alternatives: [
-      A('safe',     'Same with yuzu chimichurri',               'Add yuzu juice to chimichurri. Tiny shift, big effect.'),
+    { name: 'Beef Angus Sirloin (160gr)', price: 28, ingredients: 'Oyster mushrooms, chimichurri.', cuisines: ['eu', 'latam'], alternatives: [
+      A('safe',     'Sirloin with yuzu chimichurri',           'Beef Angus sirloin, oyster mushrooms, yuzu chimichurri. Tiny shift on the original chimichurri.', { cuisines: ['eu', 'latam', 'jp'] }),
       A('medium',   'Sirloin with truffle ponzu and ponzu butter', 'Replace chimichurri with truffle ponzu glaze.'),
       A('creative', 'Sirloin with Cyprus tahini-miso glaze',    'Cypriot tahini blended with white miso for a lacquer.', { cy: true }),
     ]},
@@ -345,7 +348,7 @@ const initialMenu = [
       A('creative', 'Halumi-pinsa with sumac and mint',         'Halloumi, sumac, mint, lemon. Pure Cyprus.', { cy: true }),
     ]},
     { name: 'Wild Mushrooms', price: 15, ingredients: 'Tomato salsa, truffle, mozzarella.', cuisine: 'it', recommendRemove: true, alternatives: [
-      A('safe',     'Same, drop tomato',                        'Mushroom-truffle pinsa, no tomato. Cleaner.'),
+      A('safe',     'Mushroom-truffle pinsa, no tomato',       'Wild mushrooms, truffle, mozzarella. Tomato salsa removed for a cleaner profile.'),
       A('medium',   'Mushroom and miso butter pinsa',           'Replace mozzarella with miso butter and shiitake.'),
       A('creative', 'Cyprus mushroom and anari pinsa',          'Local wild mushrooms, anari, truffle.', { cy: true }),
     ]},
@@ -376,7 +379,7 @@ const initialMenu = [
       A('creative', 'Loaded fries with halumiyaki',             'Fries topped with diced halumiyaki, kimchi mayo.', { cy: true }),
     ]},
     { name: 'Tostadas Chips', price: 12, ingredients: 'Guacamole and sour cream.', cuisine: 'latam', alternatives: [
-      A('safe',     'Same with smoked paprika dust (Kaji)',     'Kaji had this with smoked paprika.'),
+      A('safe',     'Tostadas with smoked paprika',            'Tortilla tostadas, guacamole, sour cream, smoked paprika dust. The Kaji version.', { kaji: true }),
       A('medium',   'Tostadas with avocado mousse and salsa roja', 'Replace sour cream with avocado mousse (Kaji style).', { v: true }),
       A('creative', 'Pita chips with tahini and tomatillo',     'Cypriot pita instead of tortilla.', { cy: true, v: true }),
     ]},
@@ -388,12 +391,12 @@ const initialMenu = [
 
   { section: 'Dessert', items: [
     { name: 'Lemon Tart', price: 8, ingredients: 'Butter crumble, mint, meringues.', cuisine: 'eu', alternatives: [
-      A('safe',     'Same, refresh plating',                    'Already pleasant. Just plate it cleaner.'),
-      A('medium',   'Yuzu tart',                                'Replace lemon with yuzu, miso crumble. Same tart, Japanese accent.'),
+      A('safe',     'Lemon tart, refreshed plate',             'Lemon curd, butter crumble, mint, meringues. Cleaner plating, recipe untouched.'),
+      A('medium',   'Yuzu tart with miso crumble',             'Yuzu curd, miso crumble, mint. European tart shell with a Japanese accent.', { cuisines: ['eu', 'jp'] }),
       A('creative', 'Lemon-anari tart with mastiha',            'Cyprus lemon, anari ricotta filling, mastiha (Greek/Cypriot resin) glaze.', { cy: true }),
     ]},
-    { name: 'Dubai Churros', price: 9, ingredients: 'Pistachio ice cream, kataifi, caramel, chocolate.', cuisine: 'me', alternatives: [
-      A('safe',     'Same, hero',                               'Already on theme and a bestseller. Keep as is, mark hero.'),
+    { name: 'Dubai Churros', price: 9, ingredients: 'Pistachio ice cream, kataifi, caramel, chocolate.', cuisines: ['me', 'latam'], alternatives: [
+      A('safe',     'Dubai churros, hero plate',               'Pistachio ice cream, kataifi, caramel, chocolate. Bestseller, leave it alone.'),
       A('medium',   'Churros with miso caramel',                'Add miso to the caramel for depth.'),
       A('creative', 'Loukoumades with miso caramel and matcha', 'Cypriot loukoumades instead of churros.', { cy: true }),
     ]},
@@ -402,8 +405,8 @@ const initialMenu = [
       A('medium',   'Matcha tiramisu',                          'Bolder. Matcha and mascarpone.'),
       A('creative', 'Mahalepi tiramisu',                        'Cypriot mahalepi rosewater pudding layered like tiramisu.', { cy: true }),
     ]},
-    { name: 'Choco Cremeux', price: 9, ingredients: 'Strawberries, soya caramel, caramelised nuts (Kaji recipe).', cuisine: 'eu', alternatives: [
-      A('safe',     'Same, hero (Kaji original)',               'Kaji had this exactly. Keep, mark hero.'),
+    { name: 'Choco Cremeux', price: 9, ingredients: 'Strawberries, soya caramel, caramelised nuts (Kaji recipe).', cuisines: ['eu', 'jp'], kaji: true, alternatives: [
+      A('safe',     'Choco cremeux, Kaji original',            'Strawberries, soya caramel, caramelised nuts. The Kaji recipe, preserved.', { kaji: true }),
       A('medium',   'Cremeux with miso caramel',                'Adapt the soy caramel to a miso caramel.'),
       A('creative', 'Carob cremeux',                            'Cyprus carob instead of chocolate. Distinctively local.', { cy: true }),
     ]},
@@ -558,17 +561,24 @@ function applyShareState(seedData, share) {
 const seed = () => initialMenu.map((s) => ({
   id: uid('sec'),
   section: s.section,
-  items: s.items.map((it) => ({
-    id: uid('it'),
-    status: 'pending',
-    notes: '',
-    tweak: '',
-    vegan: !!it.vegan,
-    recommendRemove: !!it.recommendRemove,
-    selectedAlt: null,
-    deleted: false,
-    ...it,
-  })),
+  items: s.items.map((it) => {
+    const cuisines = Array.isArray(it.cuisines)
+      ? it.cuisines
+      : (it.cuisine && CUISINE[it.cuisine] ? [it.cuisine] : ['none']);
+    return {
+      id: uid('it'),
+      status: 'pending',
+      notes: '',
+      tweak: '',
+      vegan: !!it.vegan,
+      recommendRemove: !!it.recommendRemove,
+      kaji: !!it.kaji,
+      selectedAlt: null,
+      deleted: false,
+      ...it,
+      cuisines,
+    };
+  }),
   candidates: s.candidates || [],
 }));
 
@@ -608,9 +618,9 @@ function MenuWorkshop() {
         const raw = localStorage.getItem(STORAGE_KEY);
         if (raw) {
           const parsed = JSON.parse(raw);
-          if (parsed.data && Array.isArray(parsed.data) && parsed.data.every(s =>
-            s && Array.isArray(s.items) && s.items.every(it =>
-              it && typeof it.cuisine === 'string' && CUISINE[it.cuisine]
+          if (parsed.data && Array.isArray(parsed.data) && parsed.data.every((s) =>
+            s && Array.isArray(s.items) && s.items.every((it) =>
+              it && (Array.isArray(it.cuisines) || (typeof it.cuisine === 'string' && CUISINE[it.cuisine]))
             )
           )) {
             setData(parsed.data);
@@ -647,13 +657,14 @@ function MenuWorkshop() {
 
   const stats = useMemo(() => {
     const counts = { total: 0, pending: 0, aligned: 0, tweak: 0, drop: 0, hero: 0 };
-    const cuisines = { jp: 0, latam: 0, it: 0, eu: 0, fusion: 0, me: 0, none: 0 };
+    const cuisines = { jp: 0, latam: 0, it: 0, eu: 0, me: 0, none: 0 };
     let removeCount = 0, veganCount = 0, cypriotAlts = 0, addedCands = 0, picked = 0;
     data.forEach((s) => {
       s.items.forEach((it) => {
         counts.total++;
         counts[it.status] = (counts[it.status] || 0) + 1;
-        cuisines[it.cuisine] = (cuisines[it.cuisine] || 0) + 1;
+        const list = (Array.isArray(it.cuisines) && it.cuisines.length) ? it.cuisines : (it.cuisine ? [it.cuisine] : []);
+        list.forEach((c) => { cuisines[c] = (cuisines[c] || 0) + 1; });
         if (it.recommendRemove) removeCount++;
         if (it.vegan) veganCount++;
         if (it.selectedAlt) picked++;
@@ -666,28 +677,34 @@ function MenuWorkshop() {
 
   const conceptRatio = useMemo(() => {
     let jp = 0, latin = 0, cypriot = 0, other = 0, dishes = 0;
+    const tally = (cuisines, isCypriot) => {
+      let counted = false;
+      (cuisines || []).forEach((c) => {
+        if (c === 'jp') { jp++; counted = true; }
+        else if (c === 'latam') { latin++; counted = true; }
+        else if (c === 'none') { /* skip none */ }
+        else { other++; counted = true; }
+      });
+      if (isCypriot) { cypriot++; counted = true; }
+      if (!counted) other++;
+    };
     data.forEach((s) => {
       s.items.forEach((it) => {
         if (it.deleted) return;
         if (it.recommendRemove && !it.selectedAlt) return;
         dishes++;
         const alt = it.selectedAlt && (it.alternatives || []).find((a) => a.id === it.selectedAlt);
-        const isCypriot = !!(alt && alt.cypriot);
-        let counted = false;
-        if (it.cuisine === 'jp') { jp++; counted = true; }
-        else if (it.cuisine === 'latam') { latin++; counted = true; }
-        if (isCypriot) { cypriot++; counted = true; }
-        if (!counted) other++;
+        const baseCuisines = (Array.isArray(it.cuisines) && it.cuisines.length) ? it.cuisines : (it.cuisine ? [it.cuisine] : []);
+        const cuisines = (alt && Array.isArray(alt.cuisines) && alt.cuisines.length) ? alt.cuisines : baseCuisines;
+        tally(cuisines, !!(alt && alt.cypriot));
       });
       (s.candidates || []).forEach((c) => {
         if (!c.added) return;
         dishes++;
-        const isJp = !!(c.source && /Kaji|Matsuhisa|Nobu/.test(c.source));
-        const isCypriot = !!c.cypriot;
-        let counted = false;
-        if (isJp) { jp++; counted = true; }
-        if (isCypriot) { cypriot++; counted = true; }
-        if (!counted) other++;
+        const cuisines = (Array.isArray(c.cuisines) && c.cuisines.length)
+          ? c.cuisines
+          : (c.source && /Kaji|Matsuhisa|Nobu/.test(c.source) ? ['jp'] : []);
+        tally(cuisines, !!c.cypriot);
       });
     });
     return { jp, latin, cypriot, other, dishes };
@@ -996,7 +1013,9 @@ function ItemCard({ item, sectionId, editing, onEditStart, onEditEnd, onUpdate, 
   const [draft, setDraft] = useState(item);
   useEffect(() => { setDraft(item); }, [item.id, editing]);
 
-  const cuisine = CUISINE[item.cuisine] || CUISINE.none;
+  const cuisines = (Array.isArray(item.cuisines) && item.cuisines.length)
+    ? item.cuisines
+    : (item.cuisine ? [item.cuisine] : ['none']);
 
   return (
     <div className={`p-4 sm:p-5 transition ${item.deleted ? 'opacity-50' : item.recommendRemove ? 'bg-rose-50/30' : 'hover:bg-stone-50/50'}`}>
@@ -1036,7 +1055,15 @@ function ItemCard({ item, sectionId, editing, onEditStart, onEditEnd, onUpdate, 
         )}
 
         <div className="flex flex-wrap items-center gap-2">
-          <span className={`text-xs px-2 py-1 rounded-full border ${cuisine.color}`}>{cuisine.label}</span>
+          {cuisines.map((c) => {
+            const meta = CUISINE[c] || CUISINE.none;
+            return (
+              <span key={c} className={`text-xs px-2 py-1 rounded-full border ${meta.color}`}>{meta.label}</span>
+            );
+          })}
+          {item.kaji && (
+            <span className="text-xs px-2 py-1 rounded-full border bg-indigo-50 text-indigo-800 border-indigo-300">From Kaji</span>
+          )}
           <button
             onClick={() => onUpdate({ vegan: !item.vegan })}
             title="Toggle vegan"
@@ -1308,19 +1335,23 @@ function computeFinalSection(section) {
   section.items.forEach((it) => {
     if (it.deleted) return;
     if (it.recommendRemove && !it.selectedAlt) return;
+    const baseCuisines = (Array.isArray(it.cuisines) && it.cuisines.length) ? it.cuisines : (it.cuisine ? [it.cuisine] : []);
     if (it.selectedAlt) {
       const alt = (it.alternatives || []).find((a) => a.id === it.selectedAlt);
       if (alt) {
+        const cuisines = (Array.isArray(alt.cuisines) && alt.cuisines.length) ? alt.cuisines : baseCuisines;
         dishes.push({
           name: alt.name,
           ingredients: alt.desc || '',
           price: it.price,
           vegan: !!(alt.vegan || it.vegan),
           cypriot: !!alt.cypriot,
+          kaji: !!(alt.kaji || it.kaji),
+          isNew: false,
           notes: it.notes || '',
           tweak: it.tweak || '',
           status: it.status,
-          cuisine: it.cuisine,
+          cuisines,
           source: 'Alt of: ' + it.name,
         });
         return;
@@ -1332,25 +1363,32 @@ function computeFinalSection(section) {
       price: it.price,
       vegan: !!it.vegan,
       cypriot: false,
+      kaji: !!it.kaji,
+      isNew: false,
       notes: it.notes || '',
       tweak: it.tweak || '',
       status: it.status,
-      cuisine: it.cuisine,
+      cuisines: baseCuisines,
       source: '',
     });
   });
   (section.candidates || []).forEach((c) => {
     if (!c.added) return;
+    const cuisines = (Array.isArray(c.cuisines) && c.cuisines.length)
+      ? c.cuisines
+      : (c.source && /Kaji|Matsuhisa|Nobu/.test(c.source) ? ['jp'] : []);
     dishes.push({
       name: c.name,
       ingredients: c.desc || '',
       price: c.price,
       vegan: !!c.vegan,
       cypriot: !!c.cypriot,
+      kaji: !!c.kaji || c.type === 'kaji',
+      isNew: c.type === 'new-safe' || c.type === 'new-creative',
       notes: '',
       tweak: '',
       status: '',
-      cuisine: '',
+      cuisines,
       source: c.source ? 'via ' + c.source : 'New candidate',
     });
   });
@@ -1372,8 +1410,14 @@ function FinalMenuList({ data, verbose = false }) {
           <ul className={verbose ? 'space-y-5' : 'space-y-3'}>
             {s.dishes.map((d, i) => (
               <li key={i}>
-                <div className="flex items-baseline gap-2">
+                <div className="flex items-baseline gap-2 flex-wrap">
                   <span className="font-display text-base text-stone-900">{d.name}</span>
+                  {d.isNew && (
+                    <span className="text-[9px] uppercase tracking-widest px-1.5 py-0.5 rounded-full bg-rose-50 text-rose-700 border border-rose-300">New</span>
+                  )}
+                  {d.kaji && (
+                    <span className="text-[9px] uppercase tracking-widest px-1.5 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-300">From Kaji</span>
+                  )}
                   {d.vegan && <VeganPill/>}
                   {d.cypriot && <CypriotFlag size={14}/>}
                   <span className="flex-1 self-end mb-1.5 border-b border-dotted border-stone-300"/>
@@ -1384,14 +1428,14 @@ function FinalMenuList({ data, verbose = false }) {
                 {d.ingredients && (
                   <p className="text-sm text-stone-500 italic mt-0.5 leading-snug">{d.ingredients}</p>
                 )}
-                {verbose && (d.source || d.cuisine || (d.status && d.status !== 'pending')) && (
+                {verbose && (d.source || (d.cuisines && d.cuisines.length) || (d.status && d.status !== 'pending')) && (
                   <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mt-1.5 text-[10px] uppercase tracking-widest text-stone-500">
                     {d.source && <span>{d.source}</span>}
-                    {d.cuisine && CUISINE[d.cuisine] && (
-                      <span className={`px-1.5 py-0.5 rounded-full border ${CUISINE[d.cuisine].color}`}>
-                        {CUISINE[d.cuisine].label}
+                    {(d.cuisines || []).filter((c) => CUISINE[c]).map((c) => (
+                      <span key={c} className={`px-1.5 py-0.5 rounded-full border ${CUISINE[c].color}`}>
+                        {CUISINE[c].label}
                       </span>
-                    )}
+                    ))}
                     {d.status && d.status !== 'pending' && STATUS[d.status] && (
                       <span className={`px-1.5 py-0.5 rounded-full border ${STATUS[d.status].pill}`}>
                         {STATUS[d.status].label}
