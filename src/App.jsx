@@ -59,6 +59,7 @@ const A = (level, name, desc, opts = {}) => ({
   level, name, desc,
   cypriot: !!opts.cy,
   vegan: !!opts.v,
+  supplies: Array.isArray(opts.supplies) ? opts.supplies : null,
 });
 
 const C = (type, name, desc, opts = {}) => ({
@@ -68,6 +69,7 @@ const C = (type, name, desc, opts = {}) => ({
   source: opts.source || null,
   cypriot: !!opts.cy,
   vegan: !!opts.v,
+  supplies: Array.isArray(opts.supplies) ? opts.supplies : null,
   added: false,
 });
 
@@ -444,6 +446,36 @@ const initialMenu = [
   ]},
 ];
 
+const SUPPLY_BASICS = /^(oil|olive oil|sesame oil|soy sauce|soya|salt|sea salt|flour|sugar|water|butter|pepper|black pepper|vinegar|stock|dashi|nikiri|brine|tare|ice|garlic)$/i;
+
+const SUPPLY_NOISE = [
+  /^(same|kaji|matsuhisa|nobu|maido|nikkei|cyprus|cypriot|japanese|italian|mexican|peruvian|european|asian|mediterranean|fusion)\b/i,
+  /^(big|small|tiny|nice|fresh|local|original|premium|crowd|less|more|cleaner|bolder|sharper|fuller|lighter|already|just|maybe|surprisingly|standard|theatrical|easy|polarising)\b/i,
+  /\b(classic|style|method|way|effect|lift|shift|accent|soul|crunch|profile|note|recipe|version|riff|approach|hero|drop|bridge|format|substitute|answer|seller|idiom|deluxe|change|combo|test|first)\b/i,
+  /\b(no kitchen|crowd format|crowd item|works perfectly|may be too far|underserved|kaji had|kaji used|hand to|press to)\b/i,
+];
+
+function parseSupplies(text) {
+  if (!text) return [];
+  const firstSentence = text.split(/[.;]/, 1)[0] || '';
+  const out = [];
+  firstSentence.split(',').forEach((piece) => {
+    let t = piece.toLowerCase().trim();
+    t = t.replace(/\([^)]*\)/g, '').trim();
+    t = t.replace(/^(a |an |the |with |of |for |on |in |to |as |add |adds |adding |some |just |maybe )+/i, '');
+    t = t.replace(/^(topped|finished|drizzled|served|garnished|brushed|torched|grilled|charred|seared|smoked|wrapped|filled|tossed|blanched|cured|cooked|coated|stuffed|crusted|glazed|covered|infused|marinated|brined|shredded|chopped|sliced|minced|diced|chunked|julienned|grated|crushed|panko-coated|deep-fried|pan-fried|hand-cut|torch-finished)(\s+(with|in|on|by|using|to))?\s*/i, '');
+    t = t.replace(/^(replace|swap|change)\s+\S+(\s+\S+)?\s+(with|for)\s+/i, '');
+    t = t.replace(/\s+(instead of|in place of|on top|on the bottom|on the side|for depth|for substance|for the win)\b.*$/i, '');
+    t = t.replace(/\s+/g, ' ').trim();
+    if (!t || t.length < 3 || t.length > 30) return;
+    if (SUPPLY_BASICS.test(t)) return;
+    if (/^\d/.test(t)) return;
+    if (SUPPLY_NOISE.some((re) => re.test(t))) return;
+    out.push(t);
+  });
+  return out;
+}
+
 function buildShareState(data) {
   const items = [];
   const cands = [];
@@ -633,67 +665,54 @@ function MenuWorkshop() {
   }, [data]);
 
   const conceptRatio = useMemo(() => {
-    let jp = 0, latin = 0, cypriot = 0, other = 0;
+    let jp = 0, latin = 0, cypriot = 0, other = 0, dishes = 0;
     data.forEach((s) => {
       s.items.forEach((it) => {
         if (it.deleted) return;
         if (it.recommendRemove && !it.selectedAlt) return;
+        dishes++;
         const alt = it.selectedAlt && (it.alternatives || []).find((a) => a.id === it.selectedAlt);
-        if (alt && alt.cypriot) { cypriot++; return; }
-        if (it.cuisine === 'jp') jp++;
-        else if (it.cuisine === 'latam') latin++;
-        else other++;
+        const isCypriot = !!(alt && alt.cypriot);
+        let counted = false;
+        if (it.cuisine === 'jp') { jp++; counted = true; }
+        else if (it.cuisine === 'latam') { latin++; counted = true; }
+        if (isCypriot) { cypriot++; counted = true; }
+        if (!counted) other++;
       });
       (s.candidates || []).forEach((c) => {
         if (!c.added) return;
-        if (c.cypriot) { cypriot++; return; }
-        if (c.source && /Kaji|Matsuhisa|Nobu/.test(c.source)) jp++;
-        else other++;
+        dishes++;
+        const isJp = !!(c.source && /Kaji|Matsuhisa|Nobu/.test(c.source));
+        const isCypriot = !!c.cypriot;
+        let counted = false;
+        if (isJp) { jp++; counted = true; }
+        if (isCypriot) { cypriot++; counted = true; }
+        if (!counted) other++;
       });
     });
-    return { jp, latin, cypriot, other };
+    return { jp, latin, cypriot, other, dishes };
   }, [data]);
 
   const supplies = useMemo(() => {
-    const BASICS = /\b(oil|olive oil|sesame oil|soy sauce|soya|salt|sea salt|flour|sugar|water|butter|pepper|black pepper|vinegar|stock|dashi)\b/i;
-    const NOISE = /^(same|kaji|matsuhisa|nobu|maido|nikkei|already|just|crowd|premium|standard|theatrical|easy|big|small|cleaner|bolder|sharper|less|more|tiny|nice|cyprus|cypriot|local|fresh|original|recipe|version|riff|style|approach|way|hero|drop|bridge|polarising|test|first|kitchen|change|charge|surprisingly|works|underserved|gap|safe|medium|creative|robata|mexican|peruvian|japanese|italian|mediterranean|european|asian|fusion|nikkei|matsuhisa riff|kaji style|same dish|safe tweak|already excellent|already on theme)$/i;
     const set = new Set();
-    const clean = (s) => {
-      let t = s.toLowerCase().trim();
-      t = t.replace(/\([^)]*\)/g, '').trim();
-      t = t.replace(/^(topped|finished|drizzled|served|garnished|added|brushed|torched|grilled|charred|seared|smoked|wrapped|filled|tossed|blanched|cured|cooked|coated|panko|deep)\s+(with|in|on)\s+/, '');
-      t = t.replace(/^(a |an |the |with |of |for |on |in |to |as |add |adds |adding )+/, '');
-      t = t.replace(/\s+/g, ' ').trim();
-      return t;
-    };
-    const add = (text) => {
-      if (!text) return;
-      text.split(/[,.;:]/).forEach((piece) => {
-        const c = clean(piece);
-        if (!c || c.length < 3 || c.length > 36) return;
-        if (BASICS.test(c)) return;
-        if (NOISE.test(c)) return;
-        if (/^\d/.test(c)) return;
-        set.add(c);
-      });
+    const collect = (text, override) => {
+      const list = (Array.isArray(override) && override.length > 0) ? override : parseSupplies(text);
+      list.forEach((x) => set.add(x.toLowerCase().trim()));
     };
     data.forEach((s) => {
       s.items.forEach((it) => {
         if (it.deleted) return;
-        const picked = !!it.selectedAlt;
-        const confirmed = it.status === 'aligned' || it.status === 'hero';
-        if (!picked && !confirmed) return;
-        if (it.recommendRemove && !picked) return;
-        add(it.ingredients);
-        if (picked) {
+        if (it.recommendRemove && !it.selectedAlt) return;
+        if (it.selectedAlt) {
           const alt = (it.alternatives || []).find((a) => a.id === it.selectedAlt);
-          if (alt) add(alt.desc);
+          if (alt) collect(alt.desc, alt.supplies);
+        } else {
+          collect(it.ingredients, it.supplies);
         }
-        if (it.tweak) add(it.tweak);
       });
       (s.candidates || []).forEach((c) => {
         if (!c.added) return;
-        add(c.desc);
+        collect(c.desc, c.supplies);
       });
     });
     return [...set].sort();
@@ -983,7 +1002,6 @@ function ItemCard({ item, sectionId, editing, onEditStart, onEditEnd, onUpdate, 
   const [draft, setDraft] = useState(item);
   useEffect(() => { setDraft(item); }, [item.id, editing]);
 
-  const status = STATUS[item.status] || STATUS.pending;
   const cuisine = CUISINE[item.cuisine] || CUISINE.none;
 
   return (
@@ -1024,12 +1042,7 @@ function ItemCard({ item, sectionId, editing, onEditStart, onEditEnd, onUpdate, 
         )}
 
         <div className="flex flex-wrap items-center gap-2">
-          <select value={item.status} onChange={(e) => onUpdate({ status: e.target.value })} className={`text-xs px-2 py-1 rounded-full border focus:outline-none ${status.pill}`}>
-            {Object.entries(STATUS).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
-          </select>
-          <select value={item.cuisine} onChange={(e) => onUpdate({ cuisine: e.target.value })} className={`text-xs px-2 py-1 rounded-full border focus:outline-none ${cuisine.color}`}>
-            {Object.entries(CUISINE).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
-          </select>
+          <span className={`text-xs px-2 py-1 rounded-full border ${cuisine.color}`}>{cuisine.label}</span>
           <button
             onClick={() => onUpdate({ vegan: !item.vegan })}
             title="Toggle vegan"
@@ -1240,12 +1253,13 @@ function ConceptRatioPanel({ ratio }) {
     { label: 'Other',    value: ratio.other,   color: '#a8a29e' },
   ];
   const total = slices.reduce((sum, s) => sum + s.value, 0);
+  const dishCount = ratio.dishes ?? total;
   return (
     <div className="mt-6 bg-white border border-stone-300 rounded-lg p-4 flex items-center gap-5 flex-wrap">
       <PieChart slices={slices} size={104}/>
       <div className="flex-1 min-w-[200px]">
         <div className="text-[10px] uppercase tracking-widest text-stone-500 mb-2">
-          Concept ratio · {total} active dishes
+          Concept ratio · {total} tags across {dishCount} dishes
         </div>
         <ul className="space-y-1">
           {slices.filter((s) => s.value > 0).map((s) => (
@@ -1275,7 +1289,7 @@ function SuppliesModal({ supplies, onClose }) {
           <div>
             <h2 className="font-display text-2xl text-amber-900">Specialty supplies</h2>
             <p className="text-xs text-stone-500 mt-1 max-w-md">
-              Only items where you picked an alternative or marked status as on theme / hero, plus bookmarked candidates. Excludes basics (oil, soy sauce, salt, flour, sugar, vinegar, dashi, stock).
+              Combined ingredients of every dish in the final menu (active items plus added candidates). Pulled from the first sentence of each dish description, or from an explicit supply list when one is set in the data. Excludes basics (oil, soy sauce, salt, flour, sugar, vinegar, dashi, stock).
             </p>
           </div>
           <button onClick={onClose} className="text-stone-500 hover:text-stone-900 p-1 flex-shrink-0" title="Close"><X size={20}/></button>
