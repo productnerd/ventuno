@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Plus, Trash2, Download, RotateCcw, Star, AlertCircle, X, Edit3, Check, ExternalLink, Leaf, Ban, Sparkles, Shield, Flame, Bookmark, ClipboardList } from 'lucide-react';
+import { Plus, Trash2, Download, RotateCcw, Star, AlertCircle, X, Edit3, Check, ExternalLink, Leaf, Ban, Sparkles, Shield, Flame, Bookmark, ClipboardList, Share2, Link2 } from 'lucide-react';
 
 const STORAGE_KEY = 'ventuno_menu_v3';
 
@@ -442,6 +442,82 @@ const initialMenu = [
   ]},
 ];
 
+function buildShareState(data) {
+  const items = [];
+  const cands = [];
+  data.forEach((s) => {
+    s.items.forEach((it) => {
+      const altIdx = it.selectedAlt
+        ? (it.alternatives || []).findIndex((a) => a.id === it.selectedAlt)
+        : -1;
+      const isUntouched =
+        altIdx === -1 &&
+        it.status === 'pending' &&
+        !it.notes &&
+        !it.tweak;
+      if (isUntouched) return;
+      items.push([
+        s.section,
+        it.name,
+        altIdx,
+        it.status,
+        it.recommendRemove ? 1 : 0,
+        it.notes || '',
+        it.tweak || '',
+      ]);
+    });
+    (s.candidates || []).forEach((c) => {
+      if (c.added) cands.push([s.section, c.name]);
+    });
+  });
+  return { v: 1, items, cands };
+}
+
+function encodeShareState(state) {
+  const json = JSON.stringify(state);
+  return btoa(unescape(encodeURIComponent(json)))
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=+$/, '');
+}
+
+function decodeShareState(encoded) {
+  const padded = encoded + '='.repeat((4 - (encoded.length % 4)) % 4);
+  const b64 = padded.replace(/-/g, '+').replace(/_/g, '/');
+  const json = decodeURIComponent(escape(atob(b64)));
+  return JSON.parse(json);
+}
+
+function applyShareState(seedData, share) {
+  if (!share || share.v !== 1) return seedData;
+  const itemMap = new Map();
+  (share.items || []).forEach((arr) => {
+    const [sec, name, altIdx, status, removed, notes, tweak] = arr;
+    itemMap.set(sec + '::' + name, { altIdx, status, removed: !!removed, notes: notes || '', tweak: tweak || '' });
+  });
+  const candSet = new Set((share.cands || []).map(([sec, name]) => sec + '::' + name));
+  return seedData.map((s) => ({
+    ...s,
+    items: s.items.map((it) => {
+      const e = itemMap.get(s.section + '::' + it.name);
+      if (!e) return it;
+      const alt = e.altIdx >= 0 && it.alternatives ? it.alternatives[e.altIdx] : null;
+      return {
+        ...it,
+        selectedAlt: alt ? alt.id : null,
+        status: e.status || it.status,
+        recommendRemove: e.removed,
+        notes: e.notes,
+        tweak: e.tweak,
+      };
+    }),
+    candidates: (s.candidates || []).map((c) => ({
+      ...c,
+      added: candSet.has(s.section + '::' + c.name),
+    })),
+  }));
+}
+
 const seed = () => initialMenu.map((s) => ({
   id: uid('sec'),
   section: s.section,
@@ -468,25 +544,42 @@ export default function MenuWorkshop() {
   const [editingId, setEditingId] = useState(null);
   const [collapsed, setCollapsed] = useState({});
   const [showSupplies, setShowSupplies] = useState(false);
+  const [fromShareBanner, setFromShareBanner] = useState(false);
+  const [shareCopied, setShareCopied] = useState(false);
 
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) {
-        const parsed = JSON.parse(raw);
-        if (parsed.data && Array.isArray(parsed.data) && parsed.data.every(s =>
-          s && Array.isArray(s.items) && s.items.every(it =>
-            it && typeof it.cuisine === 'string' && CUISINE[it.cuisine]
-          )
-        )) {
-          setData(parsed.data);
-        }
-        if (parsed.theme && THEMES.find(t => t.id === parsed.theme)) {
-          setTheme(parsed.theme);
-        }
+    let usedShare = false;
+    const hash = window.location.hash;
+    if (hash.startsWith('#s=')) {
+      try {
+        const share = decodeShareState(hash.slice(3));
+        const merged = applyShareState(seed(), share);
+        setData(merged);
+        usedShare = true;
+        setFromShareBanner(true);
+      } catch (e) {
+        console.warn('Failed to load shared link', e);
       }
-    } catch (e) {
-      // first run or corrupt data, use seed
+    }
+    if (!usedShare) {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (parsed.data && Array.isArray(parsed.data) && parsed.data.every(s =>
+            s && Array.isArray(s.items) && s.items.every(it =>
+              it && typeof it.cuisine === 'string' && CUISINE[it.cuisine]
+            )
+          )) {
+            setData(parsed.data);
+          }
+          if (parsed.theme && THEMES.find(t => t.id === parsed.theme)) {
+            setTheme(parsed.theme);
+          }
+        }
+      } catch (e) {
+        // first run or corrupt data, use seed
+      }
     }
     setLoaded(true);
   }, []);
@@ -565,10 +658,15 @@ export default function MenuWorkshop() {
     };
     data.forEach((s) => {
       s.items.forEach((it) => {
-        if (it.recommendRemove && !it.selectedAlt) return;
+        const picked = !!it.selectedAlt;
+        const confirmed = it.status === 'aligned' || it.status === 'hero';
+        if (!picked && !confirmed) return;
+        if (it.recommendRemove && !picked) return;
         add(it.ingredients);
-        const alt = it.selectedAlt && (it.alternatives || []).find((a) => a.id === it.selectedAlt);
-        if (alt) add(alt.desc);
+        if (picked) {
+          const alt = (it.alternatives || []).find((a) => a.id === it.selectedAlt);
+          if (alt) add(alt.desc);
+        }
         if (it.tweak) add(it.tweak);
       });
       (s.candidates || []).forEach((c) => {
@@ -620,8 +718,8 @@ export default function MenuWorkshop() {
 
   const reset = () => {
     if (window.confirm('Wipe all changes and reload original menu plus suggestions? This cannot be undone.')) {
-      setData(seed());
-      setTheme('nikkei_cy');
+      try { localStorage.removeItem(STORAGE_KEY); } catch (e) { /* ignore */ }
+      window.location.replace(window.location.pathname);
     }
   };
 
@@ -633,6 +731,23 @@ export default function MenuWorkshop() {
     a.download = `ventuno_menu_${new Date().toISOString().slice(0, 10)}.json`;
     a.click();
     URL.revokeObjectURL(url);
+  };
+
+  const shareLink = () => {
+    const state = buildShareState(data);
+    const encoded = encodeShareState(state);
+    const url = `${window.location.origin}${window.location.pathname}#s=${encoded}`;
+    const finish = () => {
+      setShareCopied(true);
+      setTimeout(() => setShareCopied(false), 2200);
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(url).then(finish).catch(() => {
+        window.prompt('Copy this link to share your selections:', url);
+      });
+    } else {
+      window.prompt('Copy this link to share your selections:', url);
+    }
   };
 
   const matchFilters = (it) =>
@@ -652,6 +767,27 @@ export default function MenuWorkshop() {
 
   return (
     <div className="min-h-screen bg-stone-50 text-stone-900" style={{ fontFamily: "system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" }}>
+      {fromShareBanner && (
+        <div className="bg-amber-50 border-b border-amber-300 px-4 py-2 text-xs text-amber-900 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <Link2 size={12}/>
+            <span>Viewing a shared menu. Edits autosave to this browser. Reload re-applies the shared state.</span>
+          </div>
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => {
+                try { history.replaceState(null, '', window.location.pathname + window.location.search); } catch (e) { /* ignore */ }
+                setFromShareBanner(false);
+              }}
+              className="text-amber-800 hover:text-amber-950 underline"
+              title="Strip the share link from the URL so future reloads use your edits"
+            >
+              Save as my copy
+            </button>
+            <button onClick={() => setFromShareBanner(false)} className="text-amber-700 hover:text-amber-900 p-0.5" title="Dismiss"><X size={14}/></button>
+          </div>
+        </div>
+      )}
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Fraunces:wght@400;500;600;700&display=swap');
         .font-display { font-family: 'Fraunces', Georgia, 'Times New Roman', serif; font-feature-settings: "ss01", "ss02"; }
@@ -677,6 +813,9 @@ export default function MenuWorkshop() {
                 </button>
                 <button onClick={() => setShowSupplies(true)} className="flex items-center gap-2 px-3 py-2 bg-teal-800 text-stone-50 text-sm hover:bg-teal-900 transition rounded">
                   <ClipboardList size={14}/> Supplies list
+                </button>
+                <button onClick={shareLink} className="flex items-center gap-2 px-3 py-2 bg-amber-900 text-stone-50 text-sm hover:bg-amber-950 transition rounded" title="Copy a link with your current selections baked in">
+                  <Share2 size={14}/> {shareCopied ? 'Link copied!' : 'Share link'}
                 </button>
                 <button onClick={reset} className="flex items-center gap-2 px-3 py-2 bg-white border border-stone-300 text-stone-700 text-sm hover:bg-stone-100 transition rounded">
                   <RotateCcw size={14}/> Reset
@@ -1147,7 +1286,7 @@ function SuppliesModal({ supplies, onClose }) {
           <div>
             <h2 className="font-display text-2xl text-amber-900">Specialty supplies</h2>
             <p className="text-xs text-stone-500 mt-1 max-w-md">
-              Active menu after applying alternatives, drops, and bookmarked candidates. Excludes basics like oil, soy sauce, salt, flour, sugar.
+              Only items where you picked an alternative or marked status as on theme / hero, plus bookmarked candidates. Excludes basics (oil, soy sauce, salt, flour, sugar, vinegar, dashi, stock).
             </p>
           </div>
           <button onClick={onClose} className="text-stone-500 hover:text-stone-900 p-1 flex-shrink-0" title="Close"><X size={20}/></button>
