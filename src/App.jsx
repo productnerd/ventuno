@@ -965,28 +965,23 @@ function CandidateGroup({ section, onUpdate }) {
 }
 
 function CandidateCard({ cand, onToggle }) {
-  const hasFlags = cand.cypriot || cand.vegan;
   return (
     <button
       onClick={onToggle}
       className={`text-left rounded-lg border p-3 transition ${cand.added ? 'border-emerald-500 bg-emerald-50/50 ring-2 ring-emerald-200' : 'border-stone-200 bg-white hover:border-stone-400'}`}
     >
-      {hasFlags && (
-        <div className="flex items-center gap-1 flex-wrap mb-2">
-          {cand.cypriot && <CypriotFlag/>}
-          {cand.vegan && <VeganPill/>}
-        </div>
-      )}
-      <div className="flex items-start justify-between gap-2 mb-1">
-        <div className="font-display text-base text-stone-900 leading-tight flex-1">
+      <div className="flex items-baseline gap-x-2 gap-y-1 flex-wrap mb-1">
+        <span className="font-display text-base text-stone-900 leading-tight flex-1 min-w-0">
           {cand.name}
-        </div>
-        <div className="flex items-center gap-2 flex-shrink-0">
-          {cand.price !== null && cand.price !== undefined && (
-            <span className="font-display text-sm text-stone-600">€{cand.price}</span>
-          )}
-          {cand.added ? <Check size={14} className="text-emerald-700"/> : <Bookmark size={14} className="text-stone-400"/>}
-        </div>
+        </span>
+        {cand.cypriot && <CypriotFlag/>}
+        {cand.vegan && <VeganPill/>}
+        {cand.price !== null && cand.price !== undefined && (
+          <span className="font-display text-sm text-stone-600">€{cand.price}</span>
+        )}
+        {cand.added
+          ? <Check size={14} className="text-emerald-700 self-center"/>
+          : <Bookmark size={14} className="text-stone-400 self-center"/>}
       </div>
       <div className="text-xs text-stone-600 leading-snug">
         {cand.desc}
