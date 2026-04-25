@@ -1307,6 +1307,11 @@ function computeFinalSection(section) {
           price: it.price,
           vegan: !!(alt.vegan || it.vegan),
           cypriot: !!alt.cypriot,
+          notes: it.notes || '',
+          tweak: it.tweak || '',
+          status: it.status,
+          cuisine: it.cuisine,
+          source: 'Alt of: ' + it.name,
         });
         return;
       }
@@ -1317,6 +1322,11 @@ function computeFinalSection(section) {
       price: it.price,
       vegan: !!it.vegan,
       cypriot: false,
+      notes: it.notes || '',
+      tweak: it.tweak || '',
+      status: it.status,
+      cuisine: it.cuisine,
+      source: '',
     });
   });
   (section.candidates || []).forEach((c) => {
@@ -1327,12 +1337,17 @@ function computeFinalSection(section) {
       price: c.price,
       vegan: !!c.vegan,
       cypriot: !!c.cypriot,
+      notes: '',
+      tweak: '',
+      status: '',
+      cuisine: '',
+      source: c.source ? 'via ' + c.source : 'New candidate',
     });
   });
   return dishes;
 }
 
-function FinalMenuList({ data }) {
+function FinalMenuList({ data, verbose = false }) {
   const sections = data
     .map((s) => ({ section: s.section, dishes: computeFinalSection(s) }))
     .filter((s) => s.dishes.length > 0);
@@ -1344,7 +1359,7 @@ function FinalMenuList({ data }) {
       {sections.map((s) => (
         <section key={s.section}>
           <h3 className="font-display text-xl text-amber-900 border-b border-stone-300 pb-1 mb-3">{s.section}</h3>
-          <ul className="space-y-3">
+          <ul className={verbose ? 'space-y-5' : 'space-y-3'}>
             {s.dishes.map((d, i) => (
               <li key={i}>
                 <div className="flex items-baseline gap-2">
@@ -1358,6 +1373,33 @@ function FinalMenuList({ data }) {
                 </div>
                 {d.ingredients && (
                   <p className="text-sm text-stone-500 italic mt-0.5 leading-snug">{d.ingredients}</p>
+                )}
+                {verbose && (d.source || d.cuisine || (d.status && d.status !== 'pending')) && (
+                  <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mt-1.5 text-[10px] uppercase tracking-widest text-stone-500">
+                    {d.source && <span>{d.source}</span>}
+                    {d.cuisine && CUISINE[d.cuisine] && (
+                      <span className={`px-1.5 py-0.5 rounded-full border ${CUISINE[d.cuisine].color}`}>
+                        {CUISINE[d.cuisine].label}
+                      </span>
+                    )}
+                    {d.status && d.status !== 'pending' && STATUS[d.status] && (
+                      <span className={`px-1.5 py-0.5 rounded-full border ${STATUS[d.status].pill}`}>
+                        {STATUS[d.status].label}
+                      </span>
+                    )}
+                  </div>
+                )}
+                {verbose && d.notes && (
+                  <div className="mt-1.5 text-xs text-stone-700 bg-amber-50/60 border border-amber-200 rounded px-2 py-1.5">
+                    <span className="uppercase tracking-widest text-[9px] text-amber-800 mr-1.5">Notes</span>
+                    {d.notes}
+                  </div>
+                )}
+                {verbose && d.tweak && (
+                  <div className="mt-1.5 text-xs text-stone-700 bg-teal-50/60 border border-teal-200 rounded px-2 py-1.5">
+                    <span className="uppercase tracking-widest text-[9px] text-teal-700 mr-1.5">Tweak</span>
+                    {d.tweak}
+                  </div>
                 )}
               </li>
             ))}
@@ -1411,7 +1453,7 @@ function FinalMenuDrawer({ open, onClose, data }) {
           </div>
         </div>
         <div className="px-5 py-6">
-          <FinalMenuList data={data}/>
+          <FinalMenuList data={data} verbose/>
         </div>
       </aside>
     </>
