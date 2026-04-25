@@ -454,7 +454,8 @@ function buildShareState(data) {
         altIdx === -1 &&
         it.status === 'pending' &&
         !it.notes &&
-        !it.tweak;
+        !it.tweak &&
+        !it.deleted;
       if (isUntouched) return;
       items.push([
         s.section,
@@ -464,6 +465,7 @@ function buildShareState(data) {
         it.recommendRemove ? 1 : 0,
         it.notes || '',
         it.tweak || '',
+        it.deleted ? 1 : 0,
       ]);
     });
     (s.candidates || []).forEach((c) => {
@@ -492,8 +494,8 @@ function applyShareState(seedData, share) {
   if (!share || share.v !== 1) return seedData;
   const itemMap = new Map();
   (share.items || []).forEach((arr) => {
-    const [sec, name, altIdx, status, removed, notes, tweak] = arr;
-    itemMap.set(sec + '::' + name, { altIdx, status, removed: !!removed, notes: notes || '', tweak: tweak || '' });
+    const [sec, name, altIdx, status, removed, notes, tweak, deleted] = arr;
+    itemMap.set(sec + '::' + name, { altIdx, status, removed: !!removed, notes: notes || '', tweak: tweak || '', deleted: !!deleted });
   });
   const candSet = new Set((share.cands || []).map(([sec, name]) => sec + '::' + name));
   return seedData.map((s) => ({
@@ -509,6 +511,7 @@ function applyShareState(seedData, share) {
         recommendRemove: e.removed,
         notes: e.notes,
         tweak: e.tweak,
+        deleted: e.deleted,
       };
     }),
     candidates: (s.candidates || []).map((c) => ({
@@ -529,6 +532,7 @@ const seed = () => initialMenu.map((s) => ({
     vegan: !!it.vegan,
     recommendRemove: !!it.recommendRemove,
     selectedAlt: null,
+    deleted: false,
     ...it,
   })),
   candidates: s.candidates || [],
@@ -630,6 +634,7 @@ function MenuWorkshop() {
     let jp = 0, latin = 0, cypriot = 0, other = 0;
     data.forEach((s) => {
       s.items.forEach((it) => {
+        if (it.deleted) return;
         if (it.recommendRemove && !it.selectedAlt) return;
         const alt = it.selectedAlt && (it.alternatives || []).find((a) => a.id === it.selectedAlt);
         if (alt && alt.cypriot) { cypriot++; return; }
@@ -672,6 +677,7 @@ function MenuWorkshop() {
     };
     data.forEach((s) => {
       s.items.forEach((it) => {
+        if (it.deleted) return;
         const picked = !!it.selectedAlt;
         const confirmed = it.status === 'aligned' || it.status === 'hero';
         if (!picked && !confirmed) return;
@@ -699,7 +705,9 @@ function MenuWorkshop() {
 
   const deleteItem = (sectionId, itemId) => {
     setData((prev) => prev.map((s) =>
-      s.id !== sectionId ? s : { ...s, items: s.items.filter((it) => it.id !== itemId) }
+      s.id !== sectionId ? s : { ...s, items: s.items.map((it) => (
+        it.id !== itemId ? it : { ...it, deleted: !it.deleted }
+      )) }
     ));
   };
 
@@ -721,6 +729,7 @@ function MenuWorkshop() {
       tweak: '',
       vegan: false,
       recommendRemove: false,
+      deleted: false,
       selectedAlt: null,
       alternatives: [],
     };
@@ -976,7 +985,7 @@ function ItemCard({ item, sectionId, editing, onEditStart, onEditEnd, onUpdate, 
   const cuisine = CUISINE[item.cuisine] || CUISINE.none;
 
   return (
-    <div className={`p-4 sm:p-5 transition ${item.recommendRemove ? 'bg-rose-50/30' : 'hover:bg-stone-50/50'}`}>
+    <div className={`p-4 sm:p-5 transition ${item.deleted ? 'opacity-50' : item.recommendRemove ? 'bg-rose-50/30' : 'hover:bg-stone-50/50'}`}>
       <div className="space-y-4">
 
         {editing ? (
@@ -993,17 +1002,22 @@ function ItemCard({ item, sectionId, editing, onEditStart, onEditEnd, onUpdate, 
         ) : (
           <div>
             <div className="flex items-baseline gap-x-3 gap-y-1 flex-wrap">
-              <h3 className="font-display text-xl text-stone-900">{item.name}</h3>
-              <span className="font-display text-xl text-stone-500">€{item.price}</span>
+              <h3 className={`font-display text-xl text-stone-900 ${item.deleted ? 'line-through' : ''}`}>{item.name}</h3>
+              <span className={`font-display text-xl text-stone-500 ${item.deleted ? 'line-through' : ''}`}>€{item.price}</span>
               {item.vegan && <VeganPill/>}
               {item.recommendRemove && <RemovePill/>}
+              {item.deleted && (
+                <span className="text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-rose-100 text-rose-800 border border-rose-300 inline-flex items-center gap-1">
+                  <Trash2 size={9}/> Deleted
+                </span>
+              )}
               {item.selectedAlt && (
                 <span className="text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-violet-50 text-violet-800 border border-violet-300 inline-flex items-center gap-1">
                   <Sparkles size={9}/> Alt picked
                 </span>
               )}
             </div>
-            {item.ingredients && <p className="text-sm text-stone-600 italic mt-1">{item.ingredients}</p>}
+            {item.ingredients && <p className={`text-sm text-stone-600 italic mt-1 ${item.deleted ? 'line-through' : ''}`}>{item.ingredients}</p>}
           </div>
         )}
 
@@ -1030,7 +1044,7 @@ function ItemCard({ item, sectionId, editing, onEditStart, onEditEnd, onUpdate, 
           ) : (
             <>
               {false && <button onClick={onEditStart} className="text-stone-500 hover:text-stone-900 p-1" title="Edit"><Edit3 size={14}/></button>}
-              <button onClick={onDelete} className="text-stone-400 hover:text-rose-600 p-1" title="Delete"><Trash2 size={14}/></button>
+              <button onClick={onDelete} className={`p-1 ${item.deleted ? 'text-rose-600' : 'text-stone-400 hover:text-rose-600'}`} title={item.deleted ? 'Restore' : 'Delete'}><Trash2 size={14}/></button>
             </>
           )}
         </div>
@@ -1282,6 +1296,7 @@ function SuppliesModal({ supplies, onClose }) {
 function computeFinalSection(section) {
   const dishes = [];
   section.items.forEach((it) => {
+    if (it.deleted) return;
     if (it.recommendRemove && !it.selectedAlt) return;
     if (it.selectedAlt) {
       const alt = (it.alternatives || []).find((a) => a.id === it.selectedAlt);
