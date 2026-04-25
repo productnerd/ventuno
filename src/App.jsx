@@ -96,7 +96,7 @@ const initialMenu = [
     C('kaji',         'Sea Bass Nigiri (2pcs)',        'Nikiri sauce, tobiko orange. Kaji proven seller.', { price: 7, source: 'Kaji' }),
   ]},
 
-  { section: 'Sashimi (3pcs)', items: [
+  { section: 'Raw (3pcs)', items: [
     { name: 'Salmon (Sake)', price: 9, ingredients: 'Salmon sashimi', cuisine: 'jp', alternatives: [
       A('safe',     'Sake sashimi, sake-citrus dressing',     'Plate-finished with sake dressing. Existing on the menu, just elevated.'),
       A('medium',   'Salmon tiradito, leche de tigre',        'Peruvian citrus marinade, jalapeño, coriander. Maido style.'),
@@ -118,7 +118,7 @@ const initialMenu = [
 
   { section: 'Sushi Platters', items: [
     { name: 'Mixed Nikkei Platter', price: 52, ingredients: 'Beef taco (2pcs), tuna taco (2pcs), chicken yakitori (2pcs), prawns tempura (2pcs), tuna nigiri (2pcs), Fuji roll', cuisines: ['jp', 'latam'], alternatives: [
-      A('safe',     'Nikkei sharing platter',                  'Same composition as the original, refreshed name and plating. Zero kitchen impact.'),
+      A('safe',     'Small-plate sharing platter',             'Iberico anticucho skewer, tuna crispy taco, aguachile shot, seafood harumaki, carnitas quesadilla wedge, halumiyaki. A non-sushi greatest hits from the Kaji kitchen.', { kaji: true, cuisines: ['jp', 'latam'] }),
       A('medium',   'Anticucho-Nikkei Platter',                'Wagyu nigiri (2), sea bass nigiri (2), 2 anticucho skewers, ceviche cup, Fuji roll.'),
       A('creative', '21 Cyprus Tasting',                       'Halumiyaki, Cyprus sea bream nigiri, halloumi taco, octopus tataki, anari roll. The signature platter.', { cy: true, price: 58 }),
     ]},
@@ -165,7 +165,7 @@ const initialMenu = [
     ]},
     { name: 'Maguro Roll', price: 16, ingredients: 'King crab, mango, cucumber. Topped with fresh tuna, chives, spicy mayo.', cuisine: 'jp', alternatives: [
       A('safe',     'Maguro roll, truffle ponzu',              'King crab, mango, cucumber, fresh tuna, light truffle ponzu drizzle, chives.'),
-      A('medium',   'Spicy Tuna Uramaki (Kaji style)',          'Tuna belly, sesame, avocado, spicy sauce. Kaji had this and it sold.'),
+      A('medium',   'Spicy Tuna Uramaki',                      'Tuna belly, sesame, avocado, spicy sauce. The Kaji recipe, a proven seller.', { kaji: true }),
       A('creative', 'Maguro and feta roll',                     'White feta inside, ponzu drizzle. Polarising, so test it first.', { cy: true }),
     ]},
     { name: 'Aburi Salmon', price: 16, ingredients: 'Cream cheese, cucumber, avocado, teriyaki sauce. Topped with fresh salmon and sesame seeds.', cuisine: 'jp', alternatives: [
@@ -182,7 +182,7 @@ const initialMenu = [
   ]},
 
   { section: 'Salad', items: [
-    { name: 'Kaji Garden Salad', price: 10, ingredients: 'Seasonal veggies, pickled citrus, sake dressing.', cuisine: 'jp', vegan: true, alternatives: [
+    { name: 'Garden Salad', price: 10, ingredients: 'Seasonal veggies, pickled citrus, sake dressing.', cuisine: 'jp', vegan: true, kaji: true, alternatives: [
       A('safe',     'Cyprus seasonal garden salad',            'Cyprus seasonal vegetables, pickled citrus, sake dressing. Rotates with the local market.', { v: true, cy: true }),
       A('medium',   'Add quinoa for substance',                 'Peruvian touch, makes it a fuller starter.', { v: true }),
       A('creative', 'Cyprus garden salad with grilled halloumi', 'Same dressing, add grilled halloumi cubes. Vegetarian.', { cy: true }),
@@ -217,7 +217,7 @@ const initialMenu = [
     ]},
     { name: 'Beef Tartare', price: 18, ingredients: 'Crispy rice, sriracha, Japanese mayo, quail egg.', cuisines: ['eu', 'jp'], alternatives: [
       A('safe',     'Beef tartare, dramatic plate',            'Crispy rice, sriracha, Japanese mayo, quail egg. Same recipe, more theatrical plating.'),
-      A('medium',   'Tartare with tsukemono pickles (Kaji)',    'Kaji had this with pickles and cured yolk. Different texture profile.'),
+      A('medium',   'Tartare with tsukemono pickles',          'Beef tartare, Japanese pickles, cured yolk. Different texture profile, the Kaji version.', { kaji: true }),
       A('creative', 'Tartare with Cyprus pickles and koji oil', 'Cypriot pickled vegetables and aged soy oil. Bridge.', { cy: true }),
     ]},
     { name: 'Fried Calamari', price: 14, ingredients: 'Chimichurri, chipotle.', cuisines: ['latam', 'it'], alternatives: [
@@ -231,7 +231,7 @@ const initialMenu = [
       A('creative', 'Prawns kataifi',                           'Wrapped in kataifi instead of tempura batter. Cypriot crunch.', { cy: true }),
     ]},
     { name: 'Pork Quesadillas', price: 10, ingredients: 'Mole, cheddar.', cuisines: ['latam', 'eu'], alternatives: [
-      A('safe',     'Carnitas Quesadillas (Kaji recipe)',       'Replace with Kaji original: pulled pork, mole roja, cheese. Same idea, better recipe.'),
+      A('safe',     'Carnitas Quesadillas',                    'Pulled pork, mole roja, cheese. Same quesadilla idea, the original Kaji recipe.', { kaji: true }),
       A('medium',   'Pork belly quesadilla, miso glaze',        'Miso glazed pork belly instead of mole. More Nikkei.'),
       A('creative', 'Souvla pork quesadilla',                   'Cyprus souvla pork, halloumi, mole. Pure bridge dish.', { cy: true }),
     ]},
@@ -285,7 +285,7 @@ const initialMenu = [
       A('creative', 'Shrimps with Cyprus pepper sauce',         'Roasted Cyprus chilli pepper paste, lime.', { cy: true }),
     ]},
     { name: 'Chicken Yakitori (2pcs)', price: 8, ingredients: 'Sesame seeds, cilantro.', cuisine: 'jp', alternatives: [
-      A('safe',     'Tare-glazed yakitori (Kaji style)',        'Move from sesame to tare glaze. More authentic.'),
+      A('safe',     'Tare-glazed yakitori',                    'Chicken yakitori, tare glaze, sesame. The Kaji style, more authentic than sesame-only.', { kaji: true }),
       A('medium',   'Negima yakitori (chicken and leek)',       'Classic combo with leek between pieces.'),
       A('creative', 'Chicken yakitori with halloumi crumble',   'Halloumi crumble dust on top.', { cy: true }),
     ]},
@@ -296,7 +296,7 @@ const initialMenu = [
     C('kaji',         'Octopus skewer',            'Den miso, negi. Kaji classic.', { price: 6, source: 'Kaji' }),
     C('kaji',         'Striploin anticucho',       'Dry aged striploin, pico de gallo. Kaji.', { price: 8.5, source: 'Kaji' }),
     C('kaji',         'Rib-eye anticucho',         'Citrus dressing, sunflower seeds. Kaji premium.', { price: 9.5, source: 'Kaji' }),
-    C('kaji',         'Chicken wings (Kaji)',      'Shisho dressing. Crowd item.', { price: 3.2, source: 'Kaji' }),
+    C('kaji',         'Chicken wings, shiso dressing', 'Crispy wings tossed in shiso dressing. Reliable crowd item.', { price: 3.2, source: 'Kaji' }),
     C('kaji',         'Calamari skewer',           'Squid, ginger, chilli dipper.', { price: 4.8, source: 'Kaji' }),
   ]},
 
@@ -335,7 +335,7 @@ const initialMenu = [
   ], candidates: [
     C('new-safe',     'Black cod miso (small portion)', 'The single most copied Nikkei dish on earth. Smaller portion at €22 is a competitive entry point.', { price: 22, source: 'Matsuhisa Limassol' }),
     C('new-creative', 'Cyprus sea bream donabe',   'Whole local sea bream, dashi-tomato broth, anari dumplings.', { price: 32, cy: true }),
-    C('kaji',         'Duck Mazemen',              'Egg noodles, truffle, burned panko. Kaji signature pasta substitute. Solves the pasta question.', { price: 16, source: 'Kaji' }),
+    C('kaji',         'Duck Bolognese',            'Slow-braised duck ragù, fresh egg noodles, truffle, burned panko. The Kaji answer to a pasta dish.', { price: 16, source: 'Kaji', cuisines: ['it', 'jp'] }),
     C('inspired',     'Wagyu beef tacos',          'Onion soy sauce, 100gr wagyu in 8 pieces. Matsuhisa Limassol charges €85.', { price: 65, source: 'Matsuhisa Limassol' }),
     C('new-safe',     'Karaage chicken burger',    'Japanese fried chicken thigh, kewpie aioli, shiso, pickled cucumber, brioche bun. Crowd format, Nikkei flavour.', { price: 14 }),
     C('new-safe',     'Crispy fish sandwich',      'Panko cod, yuzu tartare, shredded cabbage, nori brioche. The Nikkei answer to a fish bap.', { price: 15 }),
@@ -369,19 +369,19 @@ const initialMenu = [
 
   { section: 'Sides and Dips', items: [
     { name: 'Steamed Rice', price: 5, ingredients: '', cuisine: 'jp', vegan: true, alternatives: [
-      A('safe',     'Steamed rice with negi oil (Kaji)',        'Slight upgrade: scallion oil drizzle.', { v: true }),
-      A('medium',   'Garlic fried rice',                        'Classic Nikkei side, more substantial.', { v: true }),
-      A('creative', 'Cyprus pourgouri pilafi',                  'Cracked wheat pilaf instead of rice. Cyprus staple.', { cy: true, v: true }),
+      A('safe',     'Steamed rice with negi oil',              'Steamed sushi rice with a scallion-oil drizzle. The Kaji upgrade.', { v: true, kaji: true, cuisines: ['jp'] }),
+      A('medium',   'Garlic fried rice',                        'Classic Nikkei side, more substantial than plain rice.', { v: true, cuisines: ['jp'] }),
+      A('creative', 'Cyprus pourgouri pilafi',                  'Cracked wheat pilaf, the Cyprus staple instead of rice.', { cy: true, v: true, cuisines: ['me'] }),
     ]},
     { name: 'Mexican Wedges', price: 5, ingredients: '', cuisine: 'latam', recommendRemove: true, alternatives: [
-      A('safe',     'Cyprus potato wedges, togarashi',          'Cypriot potatoes, Japanese 7-spice, lemon. Less generic.', { cy: true, v: true }),
-      A('medium',   'Furikake fries',                           'Crispy fries with furikake and kewpie.', { v: true }),
-      A('creative', 'Loaded fries with halumiyaki',             'Fries topped with diced halumiyaki, kimchi mayo.', { cy: true }),
+      A('safe',     'Cyprus potato wedges, togarashi',          'Cypriot potatoes, Japanese 7-spice, lemon. Less generic than the Mexican original.', { cy: true, v: true, cuisines: ['me', 'jp'] }),
+      A('medium',   'Furikake fries',                           'Crispy fries, furikake, kewpie mayo.', { v: true, cuisines: ['jp'] }),
+      A('creative', 'Loaded fries with halumiyaki',             'Crispy fries topped with diced halumiyaki and kimchi mayo.', { cy: true, cuisines: ['me', 'jp'] }),
     ]},
     { name: 'Tostadas Chips', price: 12, ingredients: 'Guacamole and sour cream.', cuisine: 'latam', alternatives: [
       A('safe',     'Tostadas with smoked paprika',            'Tortilla tostadas, guacamole, sour cream, smoked paprika dust. The Kaji version.', { kaji: true }),
       A('medium',   'Tostadas with avocado mousse and salsa roja', 'Replace sour cream with avocado mousse (Kaji style).', { v: true }),
-      A('creative', 'Pita chips with tahini and tomatillo',     'Cypriot pita instead of tortilla.', { cy: true, v: true }),
+      A('creative', 'Pita chips with tahini and tomatillo',     'Cypriot pita, tahini, tomatillo verde.', { cy: true, v: true, cuisines: ['me', 'latam'] }),
     ]},
   ], candidates: [
     C('new-safe',     'Edamame',                   'Salt or spicy. Cheap to add, never on the wrong table.', { price: 6, v: true }),
@@ -393,27 +393,27 @@ const initialMenu = [
     { name: 'Lemon Tart', price: 8, ingredients: 'Butter crumble, mint, meringues.', cuisine: 'eu', alternatives: [
       A('safe',     'Lemon tart, refreshed plate',             'Lemon curd, butter crumble, mint, meringues. Cleaner plating, recipe untouched.'),
       A('medium',   'Yuzu tart with miso crumble',             'Yuzu curd, miso crumble, mint. European tart shell with a Japanese accent.', { cuisines: ['eu', 'jp'] }),
-      A('creative', 'Lemon-anari tart with mastiha',            'Cyprus lemon, anari ricotta filling, mastiha (Greek/Cypriot resin) glaze.', { cy: true }),
+      A('creative', 'Lemon-anari tart with mastiha',            'Cyprus lemon, anari ricotta filling, mastiha resin glaze.', { cy: true, cuisines: ['eu', 'me'] }),
     ]},
     { name: 'Dubai Churros', price: 9, ingredients: 'Pistachio ice cream, kataifi, caramel, chocolate.', cuisines: ['me', 'latam'], alternatives: [
       A('safe',     'Dubai churros, hero plate',               'Pistachio ice cream, kataifi, caramel, chocolate. Bestseller, leave it alone.'),
-      A('medium',   'Churros with miso caramel',                'Add miso to the caramel for depth.'),
-      A('creative', 'Loukoumades with miso caramel and matcha', 'Cypriot loukoumades instead of churros.', { cy: true }),
+      A('medium',   'Churros with miso caramel',                'Crispy churros, pistachio cream, kataifi, miso caramel for added depth.', { cuisines: ['me', 'latam', 'jp'] }),
+      A('creative', 'Loukoumades with miso caramel and matcha', 'Cypriot loukoumades, miso caramel, matcha dust, pistachio.', { cy: true, cuisines: ['me', 'jp'] }),
     ]},
     { name: 'Tiramisu', price: 8, ingredients: '', cuisine: 'it', recommendRemove: true, alternatives: [
-      A('safe',     'Hojicha tiramisu',                         'Replace coffee with roasted green tea. Same dessert, Japanese soul.'),
-      A('medium',   'Matcha tiramisu',                          'Bolder. Matcha and mascarpone.'),
-      A('creative', 'Mahalepi tiramisu',                        'Cypriot mahalepi rosewater pudding layered like tiramisu.', { cy: true }),
+      A('safe',     'Hojicha tiramisu',                         'Mascarpone cream layered with hojicha-soaked savoiardi instead of coffee. Same dessert, Japanese accent.', { cuisines: ['it', 'jp'] }),
+      A('medium',   'Matcha tiramisu',                          'Mascarpone cream layered with matcha-soaked savoiardi. Bolder Japanese expression.', { cuisines: ['it', 'jp'] }),
+      A('creative', 'Mahalepi tiramisu',                        'Cypriot mahalepi rosewater pudding layered tiramisu-style with mascarpone cream.', { cy: true, cuisines: ['it', 'me'] }),
     ]},
     { name: 'Choco Cremeux', price: 9, ingredients: 'Strawberries, soya caramel, caramelised nuts (Kaji recipe).', cuisines: ['eu', 'jp'], kaji: true, alternatives: [
-      A('safe',     'Choco cremeux, Kaji original',            'Strawberries, soya caramel, caramelised nuts. The Kaji recipe, preserved.', { kaji: true }),
-      A('medium',   'Cremeux with miso caramel',                'Adapt the soy caramel to a miso caramel.'),
-      A('creative', 'Carob cremeux',                            'Cyprus carob instead of chocolate. Distinctively local.', { cy: true }),
+      A('safe',     'Choco cremeux',                           'Strawberries, soya caramel, caramelised nuts. The Kaji recipe, preserved.', { kaji: true }),
+      A('medium',   'Cremeux with miso caramel',                'Chocolate cremeux, strawberries, miso caramel, caramelised nuts.', { cuisines: ['eu', 'jp'] }),
+      A('creative', 'Carob cremeux',                            'Cyprus carob cremeux, strawberries, soya caramel, caramelised nuts.', { cy: true, cuisines: ['eu', 'me'] }),
     ]},
   ], candidates: [
     C('new-safe',     'Mochi ice cream selection', 'Three mochi: matcha, sesame, mango. Easy crowdpleaser.', { price: 8, v: true }),
     C('new-creative', 'Anari cheesecake with carob', 'Anari ricotta cheesecake, carob caramel, sesame crunch. Cyprus star dessert.', { price: 10, cy: true }),
-    C('kaji',         'Churros (Kaji recipe)',     'Dulce de leche, choco chipotle ganache. Kaji original recipe.', { price: 6, source: 'Kaji' }),
+    C('kaji',         'Churros, dulce de leche',   'Crispy churros, dulce de leche, choco chipotle ganache. The Kaji recipe.', { price: 6, source: 'Kaji' }),
   ]},
 
   { section: 'Platters (sharing)', items: [
@@ -444,7 +444,7 @@ const initialMenu = [
   { section: 'New: Robata and Donburi (proposed section)', items: [], candidates: [
     C('new-safe',     'Salmon teriyaki donburi',   'Rice bowl, glazed salmon, pickles, egg.', { price: 16 }),
     C('new-creative', 'Anticucho donburi',         'Rice bowl with mixed Kaji-style anticucho on top.', { price: 18 }),
-    C('kaji',         'Duck Mazemen',              'The pasta substitute. Egg noodles, truffle, burned panko.', { price: 16, source: 'Kaji' }),
+    C('kaji',         'Duck Bolognese',            'Slow-braised duck ragù, fresh egg noodles, truffle, burned panko.', { price: 16, source: 'Kaji', cuisines: ['it', 'jp'] }),
     C('inspired',     'Black cod donburi',         'Cheaper way to put black cod on the menu.', { price: 24, source: 'Matsuhisa Limassol' }),
   ]},
 ];
@@ -598,7 +598,7 @@ function MenuWorkshop() {
   const [editingId, setEditingId] = useState(null);
   const [collapsed, setCollapsed] = useState({});
   const [showSupplies, setShowSupplies] = useState(false);
-  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(true);
 
   useEffect(() => {
     let usedShare = false;
