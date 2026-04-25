@@ -835,13 +835,7 @@ function MenuWorkshop() {
           <ConceptRatioPanel ratio={conceptRatio}/>
 
           <div className="mt-6 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-3">
-            <StatCard label="Items total" value={stats.counts.total} accent="bg-stone-900"/>
-            <StatCard label="On theme" value={stats.counts.aligned || 0} accent="bg-teal-500"/>
-            <StatCard label="Needs tweak" value={stats.counts.tweak || 0} accent="bg-amber-500"/>
             <StatCard label="Marked remove" value={stats.removeCount} accent="bg-rose-600"/>
-            <StatCard label="Hero" value={stats.counts.hero || 0} accent="bg-indigo-600"/>
-            <StatCard label="Alts picked" value={stats.picked} accent="bg-violet-600"/>
-            <StatCard label="Cands. added" value={stats.addedCands} accent="bg-teal-500"/>
           </div>
 
           <div className="mt-4 flex flex-wrap gap-2 items-center">
