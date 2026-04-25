@@ -332,12 +332,14 @@ const initialMenu = [
     C('new-creative', 'Cyprus sea bream donabe',   'Whole local sea bream, dashi-tomato broth, anari dumplings.', { price: 32, cy: true }),
     C('kaji',         'Duck Mazemen',              'Egg noodles, truffle, burned panko. Kaji signature pasta substitute. Solves the pasta question.', { price: 16, source: 'Kaji' }),
     C('inspired',     'Wagyu beef tacos',          'Onion soy sauce, 100gr wagyu in 8 pieces. Matsuhisa Limassol charges €85.', { price: 65, source: 'Matsuhisa Limassol' }),
+    C('new-safe',     'Karaage chicken burger',    'Japanese fried chicken thigh, kewpie aioli, shiso, pickled cucumber, brioche bun. Crowd format, Nikkei flavour.', { price: 14 }),
+    C('new-safe',     'Crispy fish sandwich',      'Panko cod, yuzu tartare, shredded cabbage, nori brioche. The Nikkei answer to a fish bap.', { price: 15 }),
   ]},
 
   { section: 'Pinsa', items: [
     { name: 'Margarita', price: 12, ingredients: 'Tomato salsa, mozzarella, parmesan.', cuisine: 'it', recommendRemove: true, alternatives: [
       A('safe',     'Replace mozzarella with anari',            'Cypriot anari instead of mozzarella, same style.', { cy: true }),
-      A('medium',   'Miso butter and tomato pinsa',             'Tomato salsa, miso butter, basil. Vegetarian.'),
+      A('medium',   'Crispy rice pinsa, margherita Nikkei',     'Crispy sushi rice base instead of dough, tomato confit, buffalo mozzarella, aburi salmon, basil oil, nikiri brush. Italian topping on a Nikkei foundation.'),
       A('creative', 'Halumi-pinsa with sumac and mint',         'Halloumi, sumac, mint, lemon. Pure Cyprus.', { cy: true }),
     ]},
     { name: 'Wild Mushrooms', price: 15, ingredients: 'Tomato salsa, truffle, mozzarella.', cuisine: 'it', recommendRemove: true, alternatives: [
