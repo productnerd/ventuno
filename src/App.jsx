@@ -598,7 +598,10 @@ function MenuWorkshop() {
   const [editingId, setEditingId] = useState(null);
   const [collapsed, setCollapsed] = useState({});
   const [showSupplies, setShowSupplies] = useState(false);
-  const [drawerOpen, setDrawerOpen] = useState(true);
+  const [drawerOpen, setDrawerOpen] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return window.innerWidth >= 1024;
+  });
 
   useEffect(() => {
     let usedShare = false;
