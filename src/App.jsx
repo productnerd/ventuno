@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { Plus, Trash2, Download, RotateCcw, Star, AlertCircle, X, Edit3, Check, ExternalLink, Leaf, Ban, Sparkles, Shield, Flame, Bookmark, ClipboardList, Share2, Link2 } from 'lucide-react';
+import { Plus, Trash2, Download, RotateCcw, Star, AlertCircle, X, Edit3, Check, ExternalLink, Leaf, Ban, Sparkles, Shield, Flame, Bookmark, ClipboardList, Share2 } from 'lucide-react';
 
 const STORAGE_KEY = 'ventuno_menu_v3';
 
@@ -534,7 +534,13 @@ const seed = () => initialMenu.map((s) => ({
   candidates: s.candidates || [],
 }));
 
-export default function MenuWorkshop() {
+export default function App() {
+  const isMenu = typeof window !== 'undefined'
+    && new URLSearchParams(window.location.search).get('view') === 'menu';
+  return isMenu ? <MenuPage/> : <MenuWorkshop/>;
+}
+
+function MenuWorkshop() {
   const [data, setData] = useState(seed());
   const [theme, setTheme] = useState('nikkei_cy');
   const [filter, setFilter] = useState('all');
@@ -544,8 +550,7 @@ export default function MenuWorkshop() {
   const [editingId, setEditingId] = useState(null);
   const [collapsed, setCollapsed] = useState({});
   const [showSupplies, setShowSupplies] = useState(false);
-  const [fromShareBanner, setFromShareBanner] = useState(false);
-  const [shareCopied, setShareCopied] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
   useEffect(() => {
     let usedShare = false;
@@ -556,7 +561,6 @@ export default function MenuWorkshop() {
         const merged = applyShareState(seed(), share);
         setData(merged);
         usedShare = true;
-        setFromShareBanner(true);
       } catch (e) {
         console.warn('Failed to load shared link', e);
       }
@@ -590,6 +594,16 @@ export default function MenuWorkshop() {
       localStorage.setItem(STORAGE_KEY, JSON.stringify({ data, theme }));
     } catch (e) {
       console.error('Save failed', e);
+    }
+    try {
+      const state = buildShareState(data);
+      const isEmpty = state.items.length === 0 && state.cands.length === 0;
+      const newHash = isEmpty ? '' : '#s=' + encodeShareState(state);
+      if (window.location.hash !== newHash) {
+        history.replaceState(null, '', window.location.pathname + window.location.search + newHash);
+      }
+    } catch (e) {
+      // ignore URL sync failures
     }
   }, [data, theme, loaded]);
 
@@ -733,23 +747,6 @@ export default function MenuWorkshop() {
     URL.revokeObjectURL(url);
   };
 
-  const shareLink = () => {
-    const state = buildShareState(data);
-    const encoded = encodeShareState(state);
-    const url = `${window.location.origin}${window.location.pathname}#s=${encoded}`;
-    const finish = () => {
-      setShareCopied(true);
-      setTimeout(() => setShareCopied(false), 2200);
-    };
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(url).then(finish).catch(() => {
-        window.prompt('Copy this link to share your selections:', url);
-      });
-    } else {
-      window.prompt('Copy this link to share your selections:', url);
-    }
-  };
-
   const matchFilters = (it) =>
     (filter === 'all' || it.status === filter) &&
     (cuisineFilter === 'all' || it.cuisine === cuisineFilter) &&
@@ -767,44 +764,13 @@ export default function MenuWorkshop() {
 
   return (
     <div className="min-h-screen bg-stone-50 text-stone-900" style={{ fontFamily: "system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" }}>
-      {fromShareBanner && (
-        <div className="bg-amber-50 border-b border-amber-300 px-4 py-2 text-xs text-amber-900 flex items-center justify-between gap-3">
-          <div className="flex items-center gap-2">
-            <Link2 size={12}/>
-            <span>Viewing a shared menu. Edits autosave to this browser. Reload re-applies the shared state.</span>
-          </div>
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => {
-                try { history.replaceState(null, '', window.location.pathname + window.location.search); } catch (e) { /* ignore */ }
-                setFromShareBanner(false);
-              }}
-              className="text-amber-800 hover:text-amber-950 underline"
-              title="Strip the share link from the URL so future reloads use your edits"
-            >
-              Save as my copy
-            </button>
-            <button onClick={() => setFromShareBanner(false)} className="text-amber-700 hover:text-amber-900 p-0.5" title="Dismiss"><X size={14}/></button>
-          </div>
-        </div>
-      )}
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Fraunces:wght@400;500;600;700&display=swap');
-        .font-display { font-family: 'Fraunces', Georgia, 'Times New Roman', serif; font-feature-settings: "ss01", "ss02"; }
-        .ink-rule { background: linear-gradient(90deg, transparent, #1c1917 30%, #1c1917 70%, transparent); height: 1px; }
-        .paper { background-color: #faf7f2; background-image: radial-gradient(circle at 20% 10%, rgba(132, 130, 100, 0.06), transparent 40%), radial-gradient(circle at 80% 90%, rgba(132, 130, 100, 0.06), transparent 40%); }
-        select, input, textarea { font-family: inherit; }
-        textarea { resize: vertical; }
-        .hairline { border-top: 1px dashed rgba(28, 25, 23, 0.2); }
-      `}</style>
-
       <header className="paper border-b border-stone-300">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
           <div className="flex items-start justify-between gap-6 flex-wrap">
             <div className="flex-1 min-w-[260px]">
               <div className="text-xs tracking-[0.3em] text-teal-800 uppercase mb-2">Kaimakki Studio · Menu Workshop</div>
-              <h1 className="font-display text-4xl sm:text-5xl md:text-6xl font-medium text-amber-900 leading-none">21 Ventuno</h1>
-              <p className="font-display italic text-teal-800 mt-2 text-base sm:text-lg">concept: Nikkei foundation + Cypriot touches</p>
+              <h1 className="font-display text-4xl sm:text-5xl md:text-6xl font-medium text-amber-900 leading-none">Ventuno</h1>
+              <p className="font-display italic text-teal-800 mt-2 text-base sm:text-lg">concept: Nikkei foundation + selective Cypriot touches</p>
             </div>
             <div className="flex flex-col gap-3 items-stretch sm:items-end w-full sm:w-auto">
               <div className="flex gap-2 flex-wrap">
@@ -813,9 +779,6 @@ export default function MenuWorkshop() {
                 </button>
                 <button onClick={() => setShowSupplies(true)} className="flex items-center gap-2 px-3 py-2 bg-teal-800 text-stone-50 text-sm hover:bg-teal-900 transition rounded">
                   <ClipboardList size={14}/> Supplies list
-                </button>
-                <button onClick={shareLink} className="flex items-center gap-2 px-3 py-2 bg-amber-900 text-stone-50 text-sm hover:bg-amber-950 transition rounded" title="Copy a link with your current selections baked in">
-                  <Share2 size={14}/> {shareCopied ? 'Link copied!' : 'Share link'}
                 </button>
                 <button onClick={reset} className="flex items-center gap-2 px-3 py-2 bg-white border border-stone-300 text-stone-700 text-sm hover:bg-stone-100 transition rounded">
                   <RotateCcw size={14}/> Reset
@@ -863,6 +826,8 @@ export default function MenuWorkshop() {
             })}
           </div>
 
+          {/* Filter chips intentionally hidden. Wrapped in {false && (...)} to keep the code for future re-add. */}
+          {false && (
           <div className="mt-6 flex flex-wrap gap-2 items-center">
             <span className="text-xs uppercase tracking-widest text-stone-500 mr-1">Filter:</span>
             <FilterChip active={filter === 'all'} onClick={() => setFilter('all')}>All status</FilterChip>
@@ -883,6 +848,7 @@ export default function MenuWorkshop() {
               <Leaf size={11} className="inline mr-1"/> Vegan only
             </FilterChip>
           </div>
+          )}
         </div>
       </header>
 
@@ -948,6 +914,18 @@ export default function MenuWorkshop() {
       </main>
 
       {showSupplies && <SuppliesModal supplies={supplies} onClose={() => setShowSupplies(false)}/>}
+
+      {!drawerOpen && (
+        <button
+          onClick={() => setDrawerOpen(true)}
+          className="fixed right-0 top-32 z-30 bg-teal-800 text-stone-50 py-4 px-2 rounded-l-lg shadow-md hover:bg-teal-900 text-xs uppercase tracking-widest font-display"
+          style={{ writingMode: 'vertical-rl' }}
+          title="Preview the final menu"
+        >
+          Final menu
+        </button>
+      )}
+      <FinalMenuDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} data={data}/>
     </div>
   );
 }
@@ -1043,13 +1021,6 @@ function ItemCard({ item, sectionId, editing, onEditStart, onEditEnd, onUpdate, 
           >
             <Leaf size={11} className="inline"/>
           </button>
-          <button
-            onClick={() => onUpdate({ recommendRemove: !item.recommendRemove })}
-            title="Toggle recommend remove"
-            className={`text-xs px-2 py-1 rounded-full border ${item.recommendRemove ? 'bg-rose-100 text-rose-800 border-rose-300' : 'bg-white text-stone-500 border-stone-300'}`}
-          >
-            <Ban size={11} className="inline"/>
-          </button>
           <div className="flex-1"/>
           {editing ? (
             <>
@@ -1058,7 +1029,7 @@ function ItemCard({ item, sectionId, editing, onEditStart, onEditEnd, onUpdate, 
             </>
           ) : (
             <>
-              <button onClick={onEditStart} className="text-stone-500 hover:text-stone-900 p-1" title="Edit"><Edit3 size={14}/></button>
+              {false && <button onClick={onEditStart} className="text-stone-500 hover:text-stone-900 p-1" title="Edit"><Edit3 size={14}/></button>}
               <button onClick={onDelete} className="text-stone-400 hover:text-rose-600 p-1" title="Delete"><Trash2 size={14}/></button>
             </>
           )}
@@ -1084,19 +1055,21 @@ function ItemCard({ item, sectionId, editing, onEditStart, onEditEnd, onUpdate, 
           </div>
         )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 gap-3">
           <div>
             <label className="text-[10px] uppercase tracking-widest text-stone-500 mb-1 flex items-center gap-1">
               <AlertCircle size={10}/> Notes
             </label>
             <textarea value={item.notes} onChange={(e) => onUpdate({ notes: e.target.value })} rows={2} placeholder="Why is this on the menu? Bestseller? Cost concern?" className="w-full text-sm border border-stone-200 rounded p-2 focus:outline-none focus:border-teal-700 bg-stone-50/50"/>
           </div>
+          {false && (
           <div>
             <label className="text-[10px] uppercase tracking-widest text-stone-500 mb-1 flex items-center gap-1">
               <Star size={10}/> Custom tweak
             </label>
             <textarea value={item.tweak} onChange={(e) => onUpdate({ tweak: e.target.value })} rows={2} placeholder="Your own idea, beyond the three above" className="w-full text-sm border border-stone-200 rounded p-2 focus:outline-none focus:border-teal-700 bg-stone-50/50"/>
           </div>
+          )}
         </div>
 
       </div>
@@ -1301,6 +1274,159 @@ function SuppliesModal({ supplies, onClose }) {
             ))}
           </ul>
         )}
+      </div>
+    </div>
+  );
+}
+
+function computeFinalSection(section) {
+  const dishes = [];
+  section.items.forEach((it) => {
+    if (it.recommendRemove && !it.selectedAlt) return;
+    if (it.selectedAlt) {
+      const alt = (it.alternatives || []).find((a) => a.id === it.selectedAlt);
+      if (alt) {
+        dishes.push({
+          name: alt.name,
+          ingredients: alt.desc || '',
+          price: it.price,
+          vegan: !!(alt.vegan || it.vegan),
+          cypriot: !!alt.cypriot,
+        });
+        return;
+      }
+    }
+    dishes.push({
+      name: it.name,
+      ingredients: it.ingredients || '',
+      price: it.price,
+      vegan: !!it.vegan,
+      cypriot: false,
+    });
+  });
+  (section.candidates || []).forEach((c) => {
+    if (!c.added) return;
+    dishes.push({
+      name: c.name,
+      ingredients: c.desc || '',
+      price: c.price,
+      vegan: !!c.vegan,
+      cypriot: !!c.cypriot,
+    });
+  });
+  return dishes;
+}
+
+function FinalMenuList({ data }) {
+  const sections = data
+    .map((s) => ({ section: s.section, dishes: computeFinalSection(s) }))
+    .filter((s) => s.dishes.length > 0);
+  if (sections.length === 0) {
+    return <p className="text-sm text-stone-500 italic">No active dishes yet. Pick alternatives or add candidates from the workshop.</p>;
+  }
+  return (
+    <div className="space-y-8">
+      {sections.map((s) => (
+        <section key={s.section}>
+          <h3 className="font-display text-xl text-amber-900 border-b border-stone-300 pb-1 mb-3">{s.section}</h3>
+          <ul className="space-y-3">
+            {s.dishes.map((d, i) => (
+              <li key={i}>
+                <div className="flex items-baseline gap-2">
+                  <span className="font-display text-base text-stone-900">{d.name}</span>
+                  {d.vegan && <VeganPill/>}
+                  {d.cypriot && <CypriotFlag size={14}/>}
+                  <span className="flex-1 self-end mb-1.5 border-b border-dotted border-stone-300"/>
+                  {d.price !== null && d.price !== undefined && (
+                    <span className="font-display text-base text-stone-700">€{d.price}</span>
+                  )}
+                </div>
+                {d.ingredients && (
+                  <p className="text-sm text-stone-500 italic mt-0.5 leading-snug">{d.ingredients}</p>
+                )}
+              </li>
+            ))}
+          </ul>
+        </section>
+      ))}
+    </div>
+  );
+}
+
+function ShareMenuLinkButton({ data }) {
+  const [copied, setCopied] = useState(false);
+  const handle = () => {
+    const state = buildShareState(data);
+    const encoded = encodeShareState(state);
+    const url = `${window.location.origin}${window.location.pathname}?view=menu#s=${encoded}`;
+    const finish = () => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2200);
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(url).then(finish).catch(() => {
+        window.prompt('Copy this link to share the final menu:', url);
+      });
+    } else {
+      window.prompt('Copy this link to share the final menu:', url);
+    }
+  };
+  return (
+    <button
+      onClick={handle}
+      className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full border border-teal-700 text-teal-800 hover:bg-teal-50 transition"
+      title="Copy a link to a static menu page with these selections"
+    >
+      <Share2 size={12}/> {copied ? 'Link copied!' : 'Share this menu link'}
+    </button>
+  );
+}
+
+function FinalMenuDrawer({ open, onClose, data }) {
+  if (!open) return null;
+  return (
+    <>
+      <div className="fixed inset-0 bg-black/40 z-40" onClick={onClose}/>
+      <aside className="fixed top-0 right-0 bottom-0 w-full sm:w-[520px] paper border-l border-stone-300 z-50 overflow-y-auto shadow-2xl">
+        <div className="sticky top-0 bg-stone-50/95 backdrop-blur border-b border-stone-300 px-5 py-3 flex items-center justify-between gap-3">
+          <h2 className="font-display text-xl text-amber-900">Final menu</h2>
+          <div className="flex items-center gap-2">
+            <ShareMenuLinkButton data={data}/>
+            <button onClick={onClose} className="text-stone-500 hover:text-stone-900 p-1" title="Close"><X size={18}/></button>
+          </div>
+        </div>
+        <div className="px-5 py-6">
+          <FinalMenuList data={data}/>
+        </div>
+      </aside>
+    </>
+  );
+}
+
+function MenuPage() {
+  const data = useMemo(() => {
+    const hash = typeof window !== 'undefined' ? window.location.hash : '';
+    if (hash.startsWith('#s=')) {
+      try {
+        return applyShareState(seed(), decodeShareState(hash.slice(3)));
+      } catch (e) {
+        console.warn('Bad shared menu link', e);
+      }
+    }
+    return seed();
+  }, []);
+  return (
+    <div className="min-h-screen paper text-stone-900" style={{ fontFamily: "system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" }}>
+      <div className="max-w-3xl mx-auto px-6 py-12 sm:py-16">
+        <header className="text-center pb-8 mb-10 border-b border-stone-300">
+          <div className="text-xs tracking-[0.3em] text-teal-800 uppercase mb-3">Limassol, Cyprus</div>
+          <h1 className="font-display text-5xl sm:text-6xl text-amber-900 leading-none mb-3">Ventuno</h1>
+          <p className="font-display italic text-teal-800 text-base">concept: Nikkei foundation + selective Cypriot touches</p>
+        </header>
+        <FinalMenuList data={data}/>
+        <footer className="text-center mt-16 pt-6 border-t border-stone-300 text-xs text-stone-400 tracking-widest uppercase">
+          Ventuno · Limassol
+        </footer>
       </div>
     </div>
   );

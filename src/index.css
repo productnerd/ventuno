@@ -1,3 +1,36 @@
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:wght@400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.font-display {
+  font-family: 'Fraunces', Georgia, 'Times New Roman', serif;
+  font-feature-settings: "ss01", "ss02";
+}
+
+.ink-rule {
+  background: linear-gradient(90deg, transparent, #1c1917 30%, #1c1917 70%, transparent);
+  height: 1px;
+}
+
+.paper {
+  background-color: #faf7f2;
+  background-image:
+    radial-gradient(circle at 20% 10%, rgba(132, 130, 100, 0.06), transparent 40%),
+    radial-gradient(circle at 80% 90%, rgba(132, 130, 100, 0.06), transparent 40%);
+}
+
+.hairline {
+  border-top: 1px dashed rgba(28, 25, 23, 0.2);
+}
+
+select,
+input,
+textarea {
+  font-family: inherit;
+}
+
+textarea {
+  resize: vertical;
+}
