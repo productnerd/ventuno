@@ -607,7 +607,7 @@ export default function MenuWorkshop() {
             <div className="flex-1 min-w-[260px]">
               <div className="text-xs tracking-[0.3em] text-emerald-800 uppercase mb-2">Kaimakki Studio · Menu Workshop</div>
               <h1 className="font-display text-4xl sm:text-5xl md:text-6xl font-medium text-stone-900 leading-none">21 Ventuno</h1>
-              <p className="font-display italic text-emerald-800 mt-2 text-base sm:text-lg">Nikkei foundation + Cypriot touches</p>
+              <p className="font-display italic text-emerald-800 mt-2 text-base sm:text-lg">concept: Nikkei foundation + Cypriot touches</p>
             </div>
             <div className="flex flex-col gap-3 items-stretch sm:items-end w-full sm:w-auto">
               <div className="flex gap-2 flex-wrap">
