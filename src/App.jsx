@@ -5,7 +5,7 @@ const STORAGE_KEY = 'ventuno_menu_v3';
 
 const STATUS = {
   pending:  { label: 'Pending review', dot: 'bg-stone-400',     pill: 'bg-stone-100 text-stone-700 border-stone-300' },
-  aligned:  { label: 'On theme',       dot: 'bg-teal-600',   pill: 'bg-teal-50 text-teal-800 border-teal-300' },
+  aligned:  { label: 'On theme',       dot: 'bg-teal-500',   pill: 'bg-teal-50 text-teal-600 border-teal-300' },
   tweak:    { label: 'Needs tweak',    dot: 'bg-amber-500',     pill: 'bg-amber-50 text-amber-800 border-amber-300' },
   drop:     { label: 'Drop',           dot: 'bg-rose-500',      pill: 'bg-rose-50 text-rose-800 border-rose-300' },
   hero:     { label: 'Hero / keep',    dot: 'bg-indigo-600',    pill: 'bg-indigo-50 text-indigo-800 border-indigo-300' },
@@ -22,13 +22,13 @@ const CUISINE = {
 };
 
 const ALT_LEVELS = {
-  safe:     { label: 'Safe tweak',  border: 'border-teal-300', soft: 'bg-teal-50/40', text: 'text-teal-800', Icon: Shield },
+  safe:     { label: 'Safe tweak',  border: 'border-teal-300', soft: 'bg-teal-50/40', text: 'text-teal-600', Icon: Shield },
   medium:   { label: 'Medium',      border: 'border-amber-300',   soft: 'bg-amber-50/40',   text: 'text-amber-800',   Icon: Sparkles },
   creative: { label: 'Creative',    border: 'border-rose-300',    soft: 'bg-rose-50/40',    text: 'text-rose-800',    Icon: Flame },
 };
 
 const CAND_TYPES = {
-  'new-safe':     { label: 'New idea (safe)',     pill: 'bg-teal-50 text-teal-800 border-teal-300' },
+  'new-safe':     { label: 'New idea (safe)',     pill: 'bg-teal-50 text-teal-600 border-teal-300' },
   'new-creative': { label: 'New idea (creative)', pill: 'bg-rose-50 text-rose-800 border-rose-300' },
   'kaji':         { label: 'From Kaji menu',      pill: 'bg-indigo-50 text-indigo-800 border-indigo-300' },
   'inspired':     { label: 'Inspired by',         pill: 'bg-violet-50 text-violet-800 border-violet-300' },
@@ -768,16 +768,16 @@ function MenuWorkshop() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
           <div className="flex items-start justify-between gap-6 flex-wrap">
             <div className="flex-1 min-w-[260px]">
-              <div className="text-xs tracking-[0.3em] text-teal-800 uppercase mb-2">Kaimakki Studio · Menu Workshop</div>
+              <div className="text-xs tracking-[0.3em] text-teal-600 uppercase mb-2">Kaimakki Studio · Menu Workshop</div>
               <h1 className="font-display text-4xl sm:text-5xl md:text-6xl font-medium text-amber-900 leading-none">Ventuno</h1>
-              <p className="font-display italic text-teal-800 mt-2 text-base sm:text-lg">concept: Nikkei foundation + selective Cypriot touches</p>
+              <p className="font-display italic text-teal-600 mt-2 text-base sm:text-lg">concept: Nikkei foundation + selective Cypriot touches</p>
             </div>
             <div className="flex flex-col gap-3 items-stretch sm:items-end w-full sm:w-auto">
               <div className="flex gap-2 flex-wrap">
                 <button onClick={exportData} className="flex items-center gap-2 px-3 py-2 bg-stone-900 text-stone-50 text-sm hover:bg-stone-700 transition rounded">
                   <Download size={14}/> Export JSON
                 </button>
-                <button onClick={() => setShowSupplies(true)} className="flex items-center gap-2 px-3 py-2 bg-teal-800 text-stone-50 text-sm hover:bg-teal-900 transition rounded">
+                <button onClick={() => setShowSupplies(true)} className="flex items-center gap-2 px-3 py-2 bg-teal-500 text-stone-50 text-sm hover:bg-teal-600 transition rounded">
                   <ClipboardList size={14}/> Supplies list
                 </button>
                 <button onClick={reset} className="flex items-center gap-2 px-3 py-2 bg-white border border-stone-300 text-stone-700 text-sm hover:bg-stone-100 transition rounded">
@@ -791,7 +791,7 @@ function MenuWorkshop() {
                 <ul className="space-y-1">
                   {REFERENCES.map((r) => (
                     <li key={r.url} className="text-xs">
-                      <a href={r.url} target="_blank" rel="noopener noreferrer" className="text-teal-800 hover:text-teal-900 hover:underline">
+                      <a href={r.url} target="_blank" rel="noopener noreferrer" className="text-teal-600 hover:text-teal-700 hover:underline">
                         {r.name}
                       </a>
                       {r.note && <span className="text-stone-500"> · {r.note}</span>}
@@ -806,12 +806,12 @@ function MenuWorkshop() {
 
           <div className="mt-6 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-3">
             <StatCard label="Items total" value={stats.counts.total} accent="bg-stone-900"/>
-            <StatCard label="On theme" value={stats.counts.aligned || 0} accent="bg-teal-600"/>
+            <StatCard label="On theme" value={stats.counts.aligned || 0} accent="bg-teal-500"/>
             <StatCard label="Needs tweak" value={stats.counts.tweak || 0} accent="bg-amber-500"/>
             <StatCard label="Marked remove" value={stats.removeCount} accent="bg-rose-600"/>
             <StatCard label="Hero" value={stats.counts.hero || 0} accent="bg-indigo-600"/>
             <StatCard label="Alts picked" value={stats.picked} accent="bg-violet-600"/>
-            <StatCard label="Cands. added" value={stats.addedCands} accent="bg-teal-600"/>
+            <StatCard label="Cands. added" value={stats.addedCands} accent="bg-teal-500"/>
           </div>
 
           <div className="mt-4 flex flex-wrap gap-2 items-center">
@@ -860,7 +860,7 @@ function MenuWorkshop() {
           if ((filter !== 'all' || cuisineFilter !== 'all' || veganOnly) && visibleItems.length === 0 && (section.candidates || []).length === 0) return null;
           return (
             <section key={section.id} className="bg-white border border-stone-300 rounded-lg overflow-hidden mb-6 break-inside-avoid">
-              <button onClick={() => toggleCollapsed(section.id)} className="w-full flex items-center justify-between px-5 py-4 bg-teal-800 text-stone-50 hover:bg-teal-900 transition">
+              <button onClick={() => toggleCollapsed(section.id)} className="w-full flex items-center justify-between px-5 py-4 bg-teal-500 text-stone-50 hover:bg-teal-600 transition">
                 <div className="flex items-baseline gap-3">
                   <span className="font-display text-xl tracking-wide">{section.section}</span>
                   <span className="text-xs uppercase tracking-widest opacity-70">
@@ -894,7 +894,7 @@ function MenuWorkshop() {
                     onUpdate={(candId, patch) => updateCandidate(section.id, candId, patch)}
                   />
                   <div className="p-3 bg-stone-50">
-                    <button onClick={() => addItem(section.id)} className="text-sm text-teal-800 hover:text-teal-900 flex items-center gap-1.5">
+                    <button onClick={() => addItem(section.id)} className="text-sm text-teal-600 hover:text-teal-700 flex items-center gap-1.5">
                       <Plus size={14}/> Add custom item
                     </button>
                   </div>
@@ -918,7 +918,7 @@ function MenuWorkshop() {
       {!drawerOpen && (
         <button
           onClick={() => setDrawerOpen(true)}
-          className="fixed right-0 top-32 z-30 bg-teal-800 text-stone-50 py-4 px-2 rounded-l-lg shadow-md hover:bg-teal-900 text-xs uppercase tracking-widest font-display"
+          className="fixed right-0 top-32 z-30 bg-teal-500 text-stone-50 py-4 px-2 rounded-l-lg shadow-md hover:bg-teal-600 text-xs uppercase tracking-widest font-display"
           style={{ writingMode: 'vertical-rl' }}
           title="Preview the final menu"
         >
@@ -982,13 +982,13 @@ function ItemCard({ item, sectionId, editing, onEditStart, onEditEnd, onUpdate, 
         {editing ? (
           <div className="space-y-2">
             <div className="flex gap-2 flex-wrap">
-              <input value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value })} className="flex-1 min-w-[200px] font-display text-lg border-b border-stone-300 pb-1 focus:outline-none focus:border-teal-700 bg-transparent" placeholder="Dish name"/>
+              <input value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value })} className="flex-1 min-w-[200px] font-display text-lg border-b border-stone-300 pb-1 focus:outline-none focus:border-teal-500 bg-transparent" placeholder="Dish name"/>
               <div className="flex items-center gap-1">
                 <span className="text-stone-500">€</span>
-                <input type="number" step="0.5" value={draft.price} onChange={(e) => setDraft({ ...draft, price: parseFloat(e.target.value) || 0 })} className="w-16 font-display text-lg border-b border-stone-300 pb-1 focus:outline-none focus:border-teal-700 bg-transparent text-right"/>
+                <input type="number" step="0.5" value={draft.price} onChange={(e) => setDraft({ ...draft, price: parseFloat(e.target.value) || 0 })} className="w-16 font-display text-lg border-b border-stone-300 pb-1 focus:outline-none focus:border-teal-500 bg-transparent text-right"/>
               </div>
             </div>
-            <textarea value={draft.ingredients} onChange={(e) => setDraft({ ...draft, ingredients: e.target.value })} rows={2} className="w-full text-sm text-stone-600 border border-stone-200 rounded p-2 focus:outline-none focus:border-teal-700" placeholder="Ingredients and preparation notes"/>
+            <textarea value={draft.ingredients} onChange={(e) => setDraft({ ...draft, ingredients: e.target.value })} rows={2} className="w-full text-sm text-stone-600 border border-stone-200 rounded p-2 focus:outline-none focus:border-teal-500" placeholder="Ingredients and preparation notes"/>
           </div>
         ) : (
           <div>
@@ -1024,7 +1024,7 @@ function ItemCard({ item, sectionId, editing, onEditStart, onEditEnd, onUpdate, 
           <div className="flex-1"/>
           {editing ? (
             <>
-              <button onClick={() => { onUpdate(draft); onEditEnd(); }} className="text-teal-800 hover:text-teal-900 p-1" title="Save"><Check size={16}/></button>
+              <button onClick={() => { onUpdate(draft); onEditEnd(); }} className="text-teal-600 hover:text-teal-700 p-1" title="Save"><Check size={16}/></button>
               <button onClick={onEditEnd} className="text-stone-500 hover:text-stone-700 p-1" title="Cancel"><X size={16}/></button>
             </>
           ) : (
@@ -1060,14 +1060,14 @@ function ItemCard({ item, sectionId, editing, onEditStart, onEditEnd, onUpdate, 
             <label className="text-[10px] uppercase tracking-widest text-stone-500 mb-1 flex items-center gap-1">
               <AlertCircle size={10}/> Notes
             </label>
-            <textarea value={item.notes} onChange={(e) => onUpdate({ notes: e.target.value })} rows={2} placeholder="Why is this on the menu? Bestseller? Cost concern?" className="w-full text-sm border border-stone-200 rounded p-2 focus:outline-none focus:border-teal-700 bg-stone-50/50"/>
+            <textarea value={item.notes} onChange={(e) => onUpdate({ notes: e.target.value })} rows={2} placeholder="Why is this on the menu? Bestseller? Cost concern?" className="w-full text-sm border border-stone-200 rounded p-2 focus:outline-none focus:border-teal-500 bg-stone-50/50"/>
           </div>
           {false && (
           <div>
             <label className="text-[10px] uppercase tracking-widest text-stone-500 mb-1 flex items-center gap-1">
               <Star size={10}/> Custom tweak
             </label>
-            <textarea value={item.tweak} onChange={(e) => onUpdate({ tweak: e.target.value })} rows={2} placeholder="Your own idea, beyond the three above" className="w-full text-sm border border-stone-200 rounded p-2 focus:outline-none focus:border-teal-700 bg-stone-50/50"/>
+            <textarea value={item.tweak} onChange={(e) => onUpdate({ tweak: e.target.value })} rows={2} placeholder="Your own idea, beyond the three above" className="w-full text-sm border border-stone-200 rounded p-2 focus:outline-none focus:border-teal-500 bg-stone-50/50"/>
           </div>
           )}
         </div>
@@ -1218,7 +1218,7 @@ function PieChart({ slices, size = 104 }) {
 
 function ConceptRatioPanel({ ratio }) {
   const slices = [
-    { label: 'Japanese', value: ratio.jp,      color: '#0f766e' },
+    { label: 'Japanese', value: ratio.jp,      color: '#14b8a6' },
     { label: 'Latin',    value: ratio.latin,   color: '#92400e' },
     { label: 'Cypriot',  value: ratio.cypriot, color: '#a16207' },
     { label: 'Other',    value: ratio.other,   color: '#a8a29e' },
@@ -1374,7 +1374,7 @@ function ShareMenuLinkButton({ data }) {
   return (
     <button
       onClick={handle}
-      className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full border border-teal-700 text-teal-800 hover:bg-teal-50 transition"
+      className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full border border-teal-500 text-teal-600 hover:bg-teal-50 transition"
       title="Copy a link to a static menu page with these selections"
     >
       <Share2 size={12}/> {copied ? 'Link copied!' : 'Share this menu link'}
@@ -1419,9 +1419,9 @@ function MenuPage() {
     <div className="min-h-screen paper text-stone-900" style={{ fontFamily: "system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" }}>
       <div className="max-w-3xl mx-auto px-6 py-12 sm:py-16">
         <header className="text-center pb-8 mb-10 border-b border-stone-300">
-          <div className="text-xs tracking-[0.3em] text-teal-800 uppercase mb-3">Limassol, Cyprus</div>
+          <div className="text-xs tracking-[0.3em] text-teal-600 uppercase mb-3">Limassol, Cyprus</div>
           <h1 className="font-display text-5xl sm:text-6xl text-amber-900 leading-none mb-3">Ventuno</h1>
-          <p className="font-display italic text-teal-800 text-base">concept: Nikkei foundation + selective Cypriot touches</p>
+          <p className="font-display italic text-teal-600 text-base">concept: Nikkei foundation + selective Cypriot touches</p>
         </header>
         <FinalMenuList data={data}/>
         <footer className="text-center mt-16 pt-6 border-t border-stone-300 text-xs text-stone-400 tracking-widest uppercase">
