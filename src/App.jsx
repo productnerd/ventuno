@@ -479,37 +479,36 @@ function parseSupplies(text) {
   return out;
 }
 
+const SHARE_STATUS_LIST = ['pending', 'aligned', 'tweak', 'drop', 'hero'];
+
 function buildShareState(data) {
   const items = [];
   const cands = [];
-  data.forEach((s) => {
-    s.items.forEach((it) => {
+  data.forEach((s, secIdx) => {
+    s.items.forEach((it, itemIdx) => {
       const altIdx = it.selectedAlt
         ? (it.alternatives || []).findIndex((a) => a.id === it.selectedAlt)
         : -1;
-      const isUntouched =
-        altIdx === -1 &&
-        it.status === 'pending' &&
-        !it.notes &&
-        !it.tweak &&
-        !it.deleted;
+      const statusCode = Math.max(0, SHARE_STATUS_LIST.indexOf(it.status));
+      const removed = it.recommendRemove ? 1 : 0;
+      const notes = it.notes || '';
+      const tweak = it.tweak || '';
+      const deleted = it.deleted ? 1 : 0;
+      const isUntouched = altIdx === -1 && statusCode === 0 && !notes && !tweak && !deleted;
       if (isUntouched) return;
-      items.push([
-        s.section,
-        it.name,
-        altIdx,
-        it.status,
-        it.recommendRemove ? 1 : 0,
-        it.notes || '',
-        it.tweak || '',
-        it.deleted ? 1 : 0,
-      ]);
+      const arr = [secIdx, itemIdx, altIdx, statusCode, removed, notes, tweak, deleted];
+      while (arr.length > 3) {
+        const tail = arr[arr.length - 1];
+        if (tail === 0 || tail === '') arr.pop();
+        else break;
+      }
+      items.push(arr);
     });
-    (s.candidates || []).forEach((c) => {
-      if (c.added) cands.push([s.section, c.name]);
+    (s.candidates || []).forEach((c, candIdx) => {
+      if (c.added) cands.push([secIdx, candIdx]);
     });
   });
-  return { v: 1, items, cands };
+  return { v: 2, i: items, c: cands };
 }
 
 function encodeShareState(state) {
@@ -528,7 +527,50 @@ function decodeShareState(encoded) {
 }
 
 function applyShareState(seedData, share) {
-  if (!share || share.v !== 1) return seedData;
+  if (!share) return seedData;
+  if (share.v === 2) return applyShareStateV2(seedData, share);
+  if (share.v === 1) return applyShareStateV1(seedData, share);
+  return seedData;
+}
+
+function applyShareStateV2(seedData, share) {
+  const itemMap = new Map();
+  (share.i || []).forEach((arr) => {
+    const [secIdx, itemIdx, altIdx = -1, statusCode = 0, removed = 0, notes = '', tweak = '', deleted = 0] = arr;
+    itemMap.set(secIdx + ':' + itemIdx, {
+      altIdx,
+      status: SHARE_STATUS_LIST[statusCode] || 'pending',
+      removed: !!removed,
+      notes: notes || '',
+      tweak: tweak || '',
+      deleted: !!deleted,
+    });
+  });
+  const candSet = new Set((share.c || []).map(([secIdx, candIdx]) => secIdx + ':' + candIdx));
+  return seedData.map((s, secIdx) => ({
+    ...s,
+    items: s.items.map((it, itIdx) => {
+      const e = itemMap.get(secIdx + ':' + itIdx);
+      if (!e) return it;
+      const alt = e.altIdx >= 0 && it.alternatives ? it.alternatives[e.altIdx] : null;
+      return {
+        ...it,
+        selectedAlt: alt ? alt.id : null,
+        status: e.status,
+        recommendRemove: e.removed,
+        notes: e.notes,
+        tweak: e.tweak,
+        deleted: e.deleted,
+      };
+    }),
+    candidates: (s.candidates || []).map((c, candIdx) => ({
+      ...c,
+      added: candSet.has(secIdx + ':' + candIdx),
+    })),
+  }));
+}
+
+function applyShareStateV1(seedData, share) {
   const itemMap = new Map();
   (share.items || []).forEach((arr) => {
     const [sec, name, altIdx, status, removed, notes, tweak, deleted] = arr;
@@ -649,7 +691,7 @@ function MenuWorkshop() {
     }
     try {
       const state = buildShareState(data);
-      const isEmpty = state.items.length === 0 && state.cands.length === 0;
+      const isEmpty = (state.i || []).length === 0 && (state.c || []).length === 0;
       const url = new URL(window.location.href);
       if (isEmpty) {
         url.searchParams.delete('s');
