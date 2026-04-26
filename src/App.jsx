@@ -605,10 +605,11 @@ function MenuWorkshop() {
 
   useEffect(() => {
     let usedShare = false;
-    const hash = window.location.hash;
-    if (hash.startsWith('#s=')) {
+    const params = new URLSearchParams(window.location.search);
+    const encoded = params.get('s') || (window.location.hash.startsWith('#s=') ? window.location.hash.slice(3) : '');
+    if (encoded) {
       try {
-        const share = decodeShareState(hash.slice(3));
+        const share = decodeShareState(encoded);
         const merged = applyShareState(seed(), share);
         setData(merged);
         usedShare = true;
@@ -649,9 +650,18 @@ function MenuWorkshop() {
     try {
       const state = buildShareState(data);
       const isEmpty = state.items.length === 0 && state.cands.length === 0;
-      const newHash = isEmpty ? '' : '#s=' + encodeShareState(state);
-      if (window.location.hash !== newHash) {
-        history.replaceState(null, '', window.location.pathname + window.location.search + newHash);
+      const url = new URL(window.location.href);
+      if (isEmpty) {
+        url.searchParams.delete('s');
+      } else {
+        url.searchParams.set('s', encodeShareState(state));
+      }
+      // strip the legacy #s= hash now that state lives in the query
+      if (url.hash.startsWith('#s=')) url.hash = '';
+      const next = url.pathname + url.search + url.hash;
+      const current = window.location.pathname + window.location.search + window.location.hash;
+      if (next !== current) {
+        history.replaceState(null, '', next);
       }
     } catch (e) {
       // ignore URL sync failures
@@ -813,7 +823,7 @@ function MenuWorkshop() {
   }
 
   return (
-    <div className="min-h-screen bg-stone-50 text-stone-900" style={{ fontFamily: "system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" }}>
+    <div className="min-h-screen bg-stone-50 text-stone-900">
       <header className="paper border-b border-stone-300">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
           <div className="flex items-start justify-between gap-6 flex-wrap">
@@ -1478,7 +1488,7 @@ function ShareMenuLinkButton({ data }) {
   const handle = () => {
     const state = buildShareState(data);
     const encoded = encodeShareState(state);
-    const url = `${window.location.origin}${window.location.pathname}?view=menu#s=${encoded}`;
+    const url = `${window.location.origin}${window.location.pathname}?view=menu&s=${encoded}`;
     const finish = () => {
       setCopied(true);
       setTimeout(() => setCopied(false), 2200);
@@ -1525,10 +1535,12 @@ function FinalMenuDrawer({ open, onClose, data }) {
 
 function MenuPage() {
   const data = useMemo(() => {
-    const hash = typeof window !== 'undefined' ? window.location.hash : '';
-    if (hash.startsWith('#s=')) {
+    if (typeof window === 'undefined') return seed();
+    const params = new URLSearchParams(window.location.search);
+    const encoded = params.get('s') || (window.location.hash.startsWith('#s=') ? window.location.hash.slice(3) : '');
+    if (encoded) {
       try {
-        return applyShareState(seed(), decodeShareState(hash.slice(3)));
+        return applyShareState(seed(), decodeShareState(encoded));
       } catch (e) {
         console.warn('Bad shared menu link', e);
       }
@@ -1536,7 +1548,7 @@ function MenuPage() {
     return seed();
   }, []);
   return (
-    <div className="min-h-screen paper text-stone-900" style={{ fontFamily: "system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" }}>
+    <div className="min-h-screen paper text-stone-900">
       <div className="max-w-3xl mx-auto px-6 py-12 sm:py-16">
         <header className="text-center pb-8 mb-10 border-b border-stone-300">
           <div className="text-xs tracking-[0.3em] text-teal-600 uppercase mb-3">Limassol, Cyprus</div>
